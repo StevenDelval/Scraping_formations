@@ -18,7 +18,8 @@ class SimplonSpider(CrawlSpider):
 
         item = FormationItem()
         item['title']= response.xpath('//h1/text()').get()
-        # item['rncp']= response.xpath
+        item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get()
+        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').get()
         yield item
 
 
