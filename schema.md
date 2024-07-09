@@ -45,7 +45,21 @@ erDiagram
         string code_certif PK,FK
         int id_certificateur PK,FK
     }
+    session{
+        int id_session PK
+        string nom
+        string lieu
+        string region
+        date date_fin_candidature
+        date date_debut
+        int est_en_alternance
+        int est_en_distanciel
+    }
 
+    lien_formation_session{
+        int id_formation PK,FK
+        int id_session PK,FK
+    }
     
 
     formation ||--o{ lien_formation_france_competences : ""
@@ -56,4 +70,8 @@ erDiagram
     
     france_competences ||--o{ lien_france_competences_certificateur : ""
     certificateur ||--o{ lien_france_competences_certificateur : ""
+    
+    formation ||--o{ lien_formation_session : ""
+    session ||--o{ lien_formation_session : ""
+    
 ```
