@@ -3,8 +3,8 @@ erDiagram
     formation {
         int id_formation PK
         string titre 
-        float score
-        date date PK
+        int a_des_sessions
+        int a_des_rs_rncp
        
     }
     france_competences {
