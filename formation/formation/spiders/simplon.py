@@ -18,10 +18,27 @@ class SimplonSpider(CrawlSpider):
 
         item = FormationItem()
         item['title']= response.xpath('//h1/text()').get()
-        item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get()
-        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get() #@href, là ou il y a la balise a
+        item['rs']=response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        
+        # item['rncp']= response.xpath
         yield item
 
+        additional_info_link = response.xpath('//a[contains(@href,"/i-apply/")]/@href').get()
+        if additional_info_link:
+            additional_info_url = response.urljoin(additional_info_link)
+            request = scrapy.Request(additional_info_url, callback=self.parse_additional_info)
+            request.meta['item'] = item
+            request.meta.update({"playwright": True})
+
+            yield request
+        else:
+            yield item
+
+    def parse_additional_info(self, response):
+        item = response.meta['item']
+        item['additional_info'] = response.xpath('//div[@class="additional-info-class"]/text()').get()
+        yield item
 
 
 

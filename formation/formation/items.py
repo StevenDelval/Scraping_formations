@@ -11,4 +11,4 @@ class FormationItem(scrapy.Item):
     # name = scrapy.Field()
     title = scrapy.Field()
     rncp = scrapy.Field()
-    rs = scrapy.Field()
+    rs=scrapy.Field()
