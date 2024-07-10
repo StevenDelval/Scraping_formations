@@ -19,7 +19,9 @@ class SimplonSpider(CrawlSpider):
         item = FormationItem()
         item['title']= response.xpath('//h1/text()').get()
         item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get() #@href, là ou il y a la balise a
-        item['rs']=response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        
+
         
         # item['rncp']= response.xpath
         yield item
@@ -37,7 +39,17 @@ class SimplonSpider(CrawlSpider):
 
     def parse_additional_info(self, response):
         item = response.meta['item']
+        item['nom_session']= response.xpath('//h2/text()').get() #les sessiosn ouvertes
         item['additional_info'] = response.xpath('//div[@class="additional-info-class"]/text()').get()
+        day = response.xpath('//span[@class="day"]/text()').get()
+        month = response.xpath('//span[@class="month"]/text()').get()
+        year = response.xpath('//div[@class="year"]/text()').get()
+        
+        if day and month and year:
+            item['date'] = f"{day}/{month}/{year}"
+        else:
+            item['date'] = None
+        item['alternace'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
         yield item
 
 
