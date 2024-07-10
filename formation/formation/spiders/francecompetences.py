@@ -1,5 +1,6 @@
 import scrapy
 from ..items import FranceCompetencesItem
+from scrapy.selector import Selector
 
 class FrancecompetencesSpider(scrapy.Spider):
     name = "francecompetences"
@@ -26,6 +27,22 @@ class FrancecompetencesSpider(scrapy.Spider):
         item["niveau_de_qualification"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "niveau de qualification")]/../div/p/span/text()').get()
         item["date_echeance_enregistrement"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "Date d’échéance")]/../div/p/span/text()').get()
         item["title"] = response.xpath('//h1/text()').get()
+        
+        item["formacodes"] = []
+        formacodes_rows = response.xpath(
+            '//div[@class="list--fcpt-certification--essential--desktop__line"]'
+            '//p[@class="list--fcpt-certification--essential--desktop__line__title" and text()="Formacode(s)"]'
+            '/following-sibling::div//p'
+        )
+
+        for forma_row in formacodes_rows:
+            forma_row_content = ''.join(forma_row.getall())
+            forma_row_selector = Selector(text=forma_row_content)
+            span_text = forma_row_selector.xpath('//span/text()').get()
+            p_text = forma_row_selector.xpath('//p/text()[2]').get()
+
+            concatenated_text = f"{span_text.strip()} {p_text.strip()}"
+            item["formacodes"].append(concatenated_text)
         
         
         yield item   
