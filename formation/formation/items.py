@@ -13,12 +13,13 @@ class FormationItem(scrapy.Item):
     rncp = scrapy.Field()
     rs=scrapy.Field()
     nom_session=scrapy.Field()
-    date = scrapy.Field()
+    date_candidature = scrapy.Field()
     additional_info = scrapy.Field()
     alternance = scrapy.Field()
     duree = scrapy.Field()
     region = scrapy.Field()
-    diplome = scrapy.Field()
+    lieu = scrapy.Field()
+    date_debut = scrapy.Field()
     
      
 

@@ -40,19 +40,20 @@ class SimplonSpider(CrawlSpider):
     def parse_additional_info(self, response):
         item = response.meta['item']
         item['nom_session']= response.xpath('//h2/text()').get() #les sessiosn ouvertes
-        item['additional_info'] = response.xpath('//div[@class="additional-info-class"]/text()').get()
-        day = response.xpath('//span[@class="day"]/text()').get()
-        month = response.xpath('//span[@class="month"]/text()').get()
-        year = response.xpath('//div[@class="year"]/text()').get()
+        #item['additional_info'] = response.xpath('//div[@class="additional-info-class"]/text()').get()
+        day = response.xpath('//span[@class="day"]/text()').getall()
+        month = response.xpath('//span[@class="month"]/text()').getall()
+        year = response.xpath('//div[@class="year"]/text()').getall()
         
         if day and month and year:
-            item['date'] = f"{day}/{month}/{year}"
+            item['date_candidature'] = f"{day}/{month}/{year}"
         else:
-            item['date'] = None
+            item['date_candidature'] = None
         item['alternance'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
-        item['durée'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[1])').get()
-        item['region'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[2])').get()
-        item['diplome'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').get()
+        item['durée'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[1])').getall()
+        item['region'] = response.xpath('//div[@class="card-session-info calendar"]').getall()
+        item['lieu'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
+        item['date_debut'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
 
         yield item
 
