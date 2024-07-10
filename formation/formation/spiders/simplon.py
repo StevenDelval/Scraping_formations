@@ -49,7 +49,11 @@ class SimplonSpider(CrawlSpider):
             item['date'] = f"{day}/{month}/{year}"
         else:
             item['date'] = None
-        item['alternace'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
+        item['alternance'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
+        item['durée'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[1])').get()
+        item['region'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[2])').get()
+        item['diplome'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').get()
+
         yield item
 
 
