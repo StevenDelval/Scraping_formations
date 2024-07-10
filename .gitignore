@@ -220,3 +220,4 @@ terraform.rc
 *.tfplan
 # End of https://www.toptal.com/developers/gitignore/api/terraform
 moncompteformation_catalogueformation.csv
+formation/formation/output.csv
