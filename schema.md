@@ -13,10 +13,7 @@ erDiagram
         string nom_titre
         int est_actif
         string niveau_de_qualification
-        date date_de_decision
-        int duree_enregistrement_en_annees 
         date date_echeance_enregistrement
-        date Date_derniere_delivrance_possible 
     }
     
     lien_formation_france_competences {
