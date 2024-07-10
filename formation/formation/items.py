@@ -12,6 +12,9 @@ class FormationItem(scrapy.Item):
     title = scrapy.Field()
     rncp = scrapy.Field()
     rs=scrapy.Field()
+    nom_session=scrapy.Field()
+    date = scrapy.Field()
+    additional_info = scrapy.Field()
 
 
 
