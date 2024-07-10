@@ -38,10 +38,10 @@ class FrancecompetencesSpider(scrapy.Spider):
         for forma_row in formacodes_rows:
             forma_row_content = ''.join(forma_row.getall())
             forma_row_selector = Selector(text=forma_row_content)
-            span_text = forma_row_selector.xpath('//span/text()').get()
-            p_text = forma_row_selector.xpath('//p/text()[2]').get()
+            span_text = forma_row_selector.xpath('//span/text()').get().strip() if forma_row_selector.xpath('//span/text()').get() != None else ""
+            p_text = forma_row_selector.xpath('//p/text()[2]').get().strip() if forma_row_selector.xpath('//p/text()[2]').get() != None else ""
 
-            concatenated_text = f"{span_text.strip()} {p_text.strip()}"
+            concatenated_text = f"{span_text} {p_text}"
             item["formacodes"].append(concatenated_text)
         
         
