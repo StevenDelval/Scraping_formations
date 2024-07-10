@@ -33,7 +33,4 @@ class FranceCompetencesItem(scrapy.Item):
     site_internet = scrapy.Field()
     est_actif = scrapy.Field()
     niveau_de_qualification = scrapy.Field()
-    date_de_decision = scrapy.Field()
-    duree_enregistrement_en_annees = scrapy.Field()
     date_echeance_enregistrement = scrapy.Field()
-    date_derniere_delivrance_possible = scrapy.Field()
