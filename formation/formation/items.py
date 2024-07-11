@@ -6,12 +6,7 @@
 import scrapy
 
 
-class FormationItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    title = scrapy.Field()
-    rncp = scrapy.Field()
-    rs=scrapy.Field()
+class SessionsItem(scrapy.Item):
     nom_session=scrapy.Field()
     date_candidature = scrapy.Field()
     additional_info = scrapy.Field()
@@ -20,6 +15,16 @@ class FormationItem(scrapy.Item):
     region = scrapy.Field()
     lieu = scrapy.Field()
     date_debut = scrapy.Field()
+    distanciel = scrapy.Field()
+
+class FormationItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    title = scrapy.Field()
+    rncp = scrapy.Field()
+    rs = scrapy.Field()
+    sessions = scrapy.Field()
+    
     
      
 
