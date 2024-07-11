@@ -69,6 +69,35 @@ class Formation(Base):
     a_des_rs_rncp = Column(String)
 
 
+class  France_competences(Base):
+        __tablename__ = 'france_competence'
+        code_certif=Column(String, primary_key=True)
+        nom_titre=Column(String )
+        est_actif=Column(int )
+        niveau_de_qualification=Column(String )
+        date_de_decision=Column(Date )
+        duree_enregistrement_en_annees=Column(int  )
+        date_echeance_enregistrement=Column(Date )
+        Date_derniere_delivrance_possible=Column(Date  )
+    
+class    Formacode(Base):
+        __tablename__ = 'formacode'
+        formacode=Column(int, primary_key=True)  
+        nom=Column(String) 
+
+class Session(Base):
+        __tablename__ ='session'
+        id_session=Column(int, primary_key=True ) 
+        id_formation=Column(int ) 
+        nom=Column(String )
+        lieu=Column(String )
+        region=Column(String )
+        date_fin_candidature=Column(Date )
+        date_debut=Column(Date )
+        est_en_alternance=Column(int )
+        est_en_distanciel=Column(int )
+    
+
     # acteurs = relationship('Acteur', secondary=film_acteur, 
     #                        primaryjoin="and_(Film.titre == film_acteur.c.film_titre, "
     #                                    "Film.date == film_acteur.c.film_date, "
