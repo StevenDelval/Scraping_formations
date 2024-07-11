@@ -1,7 +1,8 @@
 import scrapy
-from ..items import FormationItem
+from ..items import FormationItem,SessionsItem
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
+from scrapy.selector import Selector
 
 class SimplonSpider(CrawlSpider):
     name = "simplon"
@@ -19,13 +20,8 @@ class SimplonSpider(CrawlSpider):
         item = FormationItem()
         item['title']= response.xpath('//h1/text()').get()
         item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get() #@href, là ou il y a la balise a
-        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').getall()
         
-
-        
-        # item['rncp']= response.xpath
-        yield item
-
         additional_info_link = response.xpath('//a[contains(@href,"/i-apply/")]/@href').get()
         if additional_info_link:
             additional_info_url = response.urljoin(additional_info_link)
@@ -39,21 +35,50 @@ class SimplonSpider(CrawlSpider):
 
     def parse_additional_info(self, response):
         item = response.meta['item']
-        item['nom_session']= response.xpath('//h2/text()').get() #les sessiosn ouvertes
-        #item['additional_info'] = response.xpath('//div[@class="additional-info-class"]/text()').get()
-        day = response.xpath('//span[@class="day"]/text()').getall()
-        month = response.xpath('//span[@class="month"]/text()').getall()
-        year = response.xpath('//div[@class="year"]/text()').getall()
+        item["sessions"] = []
         
-        if day and month and year:
-            item['date_candidature'] = f"{day}/{month}/{year}"
-        else:
-            item['date_candidature'] = None
-        item['alternance'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
-        item['durée'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[1])').getall()
-        item['region'] = response.xpath('//div[@class="card-session-info calendar"]').getall()
-        item['lieu'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
-        item['date_debut'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
+        sessions_divs = response.xpath('//div[@class="smp-bloc-card-session grid d-flex flex-wrap"]/div/div')
+        for session_row in sessions_divs:
+            session = SessionsItem()
+            session_row_content = ''.join(session_row.getall())
+            session_row_selector = Selector(text=session_row_content)
+            
+            day = session_row_selector.xpath('//span[@class="day"]/text()').get()
+            month = session_row_selector.xpath('//span[@class="month"]/text()').get()
+            year = session_row_selector.xpath('//div[@class="year"]/text()').get()
+            day = day.strip() if day else ""
+            month = month.strip() if month else ""
+            year = day.strip() if year else ""
+            if day and month and year:
+                session['date_candidature'] = f"{day}/{month}/{year}"
+            else:
+                session['date_candidature'] = None
+            session['nom_session']= session_row_selector.xpath('//h2/text()').get()
+            session['alternance']= session_row_selector.xpath('//div[@class="card-content-tag-container"]/div/a[contains(@href,"alternance")]/text()').get()
+            session['distanciel']= session_row_selector.xpath('//div[@class="card-content-tag-container"]/div/a[contains(@href,"100-distanciel")]/text()').get()
+            session['region'] = session_row_selector.xpath('//div[@class="card-session-info"]/i[contains(text(),"location_on")]/../text()').get()
+            session['duree'] = session_row_selector.xpath('//div[@class="card-session-info"]/i[contains(text(),"hourglass_empty")]/../text()').get()
+            session['date_debut'] = session_row_selector.xpath('//div[@class="card-session-info calendar"]/i[contains(text(),"event")]/../text()').get()
+            session['lieu'] = session_row_selector.xpath('//div[@class="card-content"]/text()').get()
+            item["sessions"].append(session)
+            
+            
+            
+
+        # item['nom_session']= response.xpath('//h2/text()').get() #les sessiosn ouvertes
+        # day = response.xpath('//span[@class="day"]/text()').getall()
+        # month = response.xpath('//span[@class="month"]/text()').getall()
+        # year = response.xpath('//div[@class="year"]/text()').getall()
+        
+        # if day and month and year:
+        #     item['date_candidature'] = f"{day}/{month}/{year}"
+        # else:
+        #     item['date_candidature'] = None
+        # item['alternance'] = response.xpath('//div[@class="card-content-tag-container"]/../text()').getall()
+        # item['duree'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[1])').getall()
+        # item['region'] = response.xpath('//div[@class="card-session-info calendar"]').getall()
+        # item['lieu'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
+        # item['date_debut'] = response.xpath('normalize-space((//div[@class="card-session-info"]/i/following-sibling::text())[3])').getall()
 
         yield item
 
