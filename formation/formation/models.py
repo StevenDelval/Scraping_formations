@@ -37,32 +37,11 @@ else:
 #     PrimaryKeyConstraint('film_titre', 'film_date', 'film_realisateur', 'acteur_id')
 # )
 
-# film_genre = Table(
-#     'film_genre', Base.metadata,
-#     Column('film_titre', String),
-#     Column('film_date', date_type),
-#     Column('film_realisateur', String),
-#     Column('genre_id', Integer, ForeignKey('genre.genre_id')),
-#     ForeignKeyConstraint(['film_titre', 'film_date', 'film_realisateur'], 
-#                          ['film.titre', 'film.date', 'film.realisateur']),
-#     PrimaryKeyConstraint('film_titre', 'film_date', 'film_realisateur', 'genre_id')
-# )
 
-# film_langue = Table(
-#     'film_langue', Base.metadata,
-#     Column('film_titre', String),
-#     Column('film_date', date_type),
-#     Column('film_realisateur', String),
-#     Column('langue_id', Integer, ForeignKey('langue.langue_id')),
-#     ForeignKeyConstraint(['film_titre', 'film_date', 'film_realisateur'], 
-#                          ['film.titre', 'film.date', 'film.realisateur']),
-#     PrimaryKeyConstraint('film_titre', 'film_date', 'film_realisateur', 'langue_id')
-# )
 
 # Define your classes
 class Formation(Base):
     __tablename__ = 'formation'
-
     id_formation = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String)
     a_des_sessions = Column(String)
@@ -73,29 +52,29 @@ class  France_competences(Base):
         __tablename__ = 'france_competence'
         code_certif=Column(String, primary_key=True)
         nom_titre=Column(String )
-        est_actif=Column(int )
+        est_actif=Column(Integer )
         niveau_de_qualification=Column(String )
         date_de_decision=Column(Date )
-        duree_enregistrement_en_annees=Column(int  )
+        duree_enregistrement_en_annees=Column(Integer  )
         date_echeance_enregistrement=Column(Date )
         Date_derniere_delivrance_possible=Column(Date  )
     
-class    Formacode(Base):
+class Formacode(Base):
         __tablename__ = 'formacode'
-        formacode=Column(int, primary_key=True)  
+        formacode=Column(Integer, primary_key=True)  
         nom=Column(String) 
 
 class Session(Base):
         __tablename__ ='session'
-        id_session=Column(int, primary_key=True ) 
-        id_formation=Column(int ) 
+        id_session=Column(Integer, primary_key=True, autoincrement=True ) 
+        id_formation=Column(Integer ) 
         nom=Column(String )
         lieu=Column(String )
         region=Column(String )
         date_fin_candidature=Column(Date )
         date_debut=Column(Date )
-        est_en_alternance=Column(int )
-        est_en_distanciel=Column(int )
+        est_en_alternance=Column(Integer )
+        est_en_distanciel=Column(Integer )
     
 
     # acteurs = relationship('Acteur', secondary=film_acteur, 
@@ -126,17 +105,6 @@ class Session(Base):
 #     acteur_first_name = Column(String)
 #     acteur_last_name = Column(String)
 
-# class Genre(Base):
-#     __tablename__ = 'genre'
-
-#     genre_id = Column(Integer, primary_key=True, autoincrement=True)
-#     genre_name = Column(String)
-
-# class Langue(Base):
-#     __tablename__ = 'langue'
-
-#     langue_id = Column(Integer, primary_key=True, autoincrement=True)
-#     langue_name = Column(String)
 
 # Configuration de la base de données (remplacez 'sqlite:///database.db' par votre base de données)
 engine = create_engine(bdd_path)
