@@ -6,6 +6,15 @@ class FrancecompetencesSpider(scrapy.Spider):
     allowed_domains = ["francecompetences.fr"]
     start_urls = ["https://www.francecompetences.fr/recherche/rncp/37682/","https://www.francecompetences.fr/recherche/rs/5487/","https://www.francecompetences.fr/recherche/rncp/37827/"]
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'formation.pipelines.FranceCompetencesPipeline': 200,
+            'formation.pipelines.FranceCompetencesDatabase': 300
+        }
+    }
+
+
+
     def parse(self, response):
         certificateur =response.xpath('//div[@class="accordion-content--fcpt-certification--certifier"]/div/table/tbody[@class="table--fcpt-certification__body"]').extract()
         certificateur_content = ''.join(certificateur)

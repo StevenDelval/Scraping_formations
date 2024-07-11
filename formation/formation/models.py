@@ -63,10 +63,10 @@ else:
 class Formation(Base):
     __tablename__ = 'formation'
 
-    id_formation = Column(int, primary_key=True)
+    id_formation = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String)
-    rncp = Column(String)
-    rs = Column(String)
+    a_des_sessions = Column(String)
+    a_des_rs_rncp = Column(String)
 
 
     # acteurs = relationship('Acteur', secondary=film_acteur, 
