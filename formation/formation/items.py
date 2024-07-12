@@ -20,7 +20,7 @@ class SessionsItem(scrapy.Item):
 class FormationItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    title = scrapy.Field()
+    titre = scrapy.Field()
     rncp = scrapy.Field()
     rs = scrapy.Field()
     sessions = scrapy.Field()
@@ -30,7 +30,7 @@ class FormationItem(scrapy.Item):
 
 class FranceCompetencesItem(scrapy.Item):
     code_certif = scrapy.Field()
-    title = scrapy.Field()
+    titre = scrapy.Field()
     formacodes = scrapy.Field()
     # nom_legal = scrapy.Field()
     # siret = scrapy.Field()

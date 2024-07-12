@@ -31,7 +31,7 @@ class FranceCompetencesPipeline:
     
     def process_item(self, item, spider):
 
-        list_col_text= ["est_actif","date_echeance_enregistrement","niveau_de_qualification","title"]
+        list_col_text= ["est_actif","date_echeance_enregistrement","niveau_de_qualification","titre"]
         item = self.clean_text(item,list_col_text)
         item = self.clean_est_actif(item)
 
@@ -55,7 +55,7 @@ class FranceCompetencesDatabase:
             else:
                 rncp_rs = FranceCompetences(
                     code_certif=item["code_certif"],
-                    nom_titre=item['title'],
+                    nom_titre=item['titre'],
                     est_actif=item['est_actif'],
                     niveau_de_qualification=item['niveau_de_qualification'],
                     date_echeance_enregistrement=item['date_echeance_enregistrement']
@@ -142,7 +142,7 @@ class SimplonDatabase(object):
         session = self.Session()
         
         formation = Formation(
-            title=item['title'],
+            titre=item['titre'],
             a_des_sessions=item['a_des_sessions'],
             a_des_rs_rncp=item['a_des_rs_rncp']
         )

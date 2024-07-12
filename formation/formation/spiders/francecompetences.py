@@ -44,12 +44,12 @@ class FrancecompetencesSpider(scrapy.Spider):
         item["est_actif"] = response.xpath('//div[@class="banner--fcpt-certification__body__tags"]/p[2]/span[2]/text()').get()
         item["niveau_de_qualification"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "niveau de qualification")]/../div/p/span/text()').get()
         item["date_echeance_enregistrement"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "Date d’échéance")]/../div/p/span/text()').get()
-        item["title"] = response.xpath('//h1/text()').get()
+        item["titre"] = response.xpath('//h1/text()').get()
         
         item["formacodes"] = []
         formacodes_rows = response.xpath(
             '//div[@class="list--fcpt-certification--essential--desktop__line"]'
-            '//p[@class="list--fcpt-certification--essential--desktop__line__title" and text()="Formacode(s)"]'
+            '//p[@class="list--fcpt-certification--essential--desktop__line__titre" and text()="Formacode(s)"]'
             '/following-sibling::div//p'
         )
 
