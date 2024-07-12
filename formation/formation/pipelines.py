@@ -163,33 +163,36 @@ class SimplonDatabase(object):
                 )
                 session.add(formation)
                 session.commit()
-            
-            if len(item["sessions"]):
-                for session_item in item["sessions"]:
+                
+            try:
+                len(item["sessions"])
+            except:
+                pass
+            else:
+                if len(item["sessions"]):
+                    for session_item in item["sessions"]:
 
-                 
-
-                    existing_session= session.query(Session).filter_by(
-                        nom= session_item['nom_session'],
-                        region = session_item['region'],
-                        date_debut = session_item['date_debut']
-                    ).first()
-
-                    if existing_session:
-                        session_formation = existing_session
-                    else:
-                        session_formation = Session(
-                            id_formation=formation.id_formation,
-                            nom = session_item['nom_session'],
-                            lieu = session_item['lieu'],
+                        existing_session= session.query(Session).filter_by(
+                            nom= session_item['nom_session'],
                             region = session_item['region'],
-                            date_fin_candidature = session_item['date_candidature'],
-                            date_debut = session_item['date_debut'],
-                            est_en_alternance = session_item['alternance'],
-                            est_en_distanciel = session_item['distanciel']
-                        )
-                        session.add(session_formation)
-                        session.commit()
+                            date_debut = session_item['date_debut']
+                        ).first()
+
+                        if existing_session:
+                            session_formation = existing_session
+                        else:
+                            session_formation = Session(
+                                id_formation=formation.id_formation,
+                                nom = session_item['nom_session'],
+                                lieu = session_item['lieu'],
+                                region = session_item['region'],
+                                date_fin_candidature = session_item['date_candidature'],
+                                date_debut = session_item['date_debut'],
+                                est_en_alternance = session_item['alternance'],
+                                est_en_distanciel = session_item['distanciel']
+                            )
+                            session.add(session_formation)
+                            session.commit()
                     
 
             # formation. = rncp_rs_certificateur_list
