@@ -7,6 +7,15 @@ class FrancecompetencesSpider(scrapy.Spider):
     allowed_domains = ["francecompetences.fr"]
     start_urls = ["https://www.francecompetences.fr/recherche/rncp/37682/","https://www.francecompetences.fr/recherche/rncp/34757/","https://www.francecompetences.fr/recherche/rs/5487/","https://www.francecompetences.fr/recherche/rncp/37827/"]
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'formation.pipelines.FranceCompetencesPipeline': 200,
+            'formation.pipelines.FranceCompetencesDatabase': 300
+        }
+    }
+
+
+
     def parse(self, response):
         item = FranceCompetencesItem()
         certificateur_rows = response.xpath(

@@ -24,17 +24,9 @@ class FormationItem(scrapy.Item):
     rncp = scrapy.Field()
     rs = scrapy.Field()
     sessions = scrapy.Field()
-    
-    
-     
-
-
-
-
-
-
-
-
+    nom_session=scrapy.Field()
+    a_des_sessions = scrapy.Field()
+    a_des_rs_rncp = scrapy.Field()
 
 class FranceCompetencesItem(scrapy.Item):
     title = scrapy.Field()
