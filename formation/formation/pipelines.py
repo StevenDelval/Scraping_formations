@@ -133,6 +133,11 @@ class FranceCompetencesDatabase:
 
 class SimplonPipeline:
     def process_item(self, item, spider):
+
+        for i in item['session'] :
+            i['alternance'] = bool(int(len(i['alternance'])))
+            i['distanciel'] = bool(int(len(i['distanciel'])))
+
         return item
 
 class SimplonDatabase(object):
