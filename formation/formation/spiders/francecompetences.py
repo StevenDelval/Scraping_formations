@@ -1,5 +1,6 @@
 import scrapy
 from ..items import FranceCompetencesItem
+from urllib.parse import urlparse
 from scrapy.selector import Selector
 
 class FrancecompetencesSpider(scrapy.Spider):
@@ -18,11 +19,17 @@ class FrancecompetencesSpider(scrapy.Spider):
 
     def parse(self, response):
         item = FranceCompetencesItem()
+
+        # Extract code_certif from the URL
+        path_segments = urlparse(response.url).path.split('/')
+        code_certif = f"{path_segments[-3].upper()}{path_segments[-2]}"
+        item["code_certif"] = code_certif
+
         certificateur_rows = response.xpath(
             '//div[@class="accordion-content--fcpt-certification--certifier"]'
             '//table/tbody[@class="table--fcpt-certification__body"]/tr'
         )
-        item["certificateur"] = []
+        item["certificateurs"] = []
 
         for row in certificateur_rows:
             cells = row.xpath('td')
@@ -31,7 +38,9 @@ class FrancecompetencesSpider(scrapy.Spider):
                 cell_text = cell.xpath('text()').get().strip() if cell.xpath('text()').get().strip() !="" else cell.xpath('a/text()').get().strip()
                 certificateur.append(cell_text)
             
-            item["certificateur"].append(certificateur)
+            item["certificateurs"].append(certificateur)
+
+
         item["est_actif"] = response.xpath('//div[@class="banner--fcpt-certification__body__tags"]/p[2]/span[2]/text()').get()
         item["niveau_de_qualification"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "niveau de qualification")]/../div/p/span/text()').get()
         item["date_echeance_enregistrement"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "Date d’échéance")]/../div/p/span/text()').get()
