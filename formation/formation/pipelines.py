@@ -159,27 +159,38 @@ class SimplonDatabase(object):
                 session.add(formation)
                 session.commit()
             
+            if len(item["sessions"]):
+                for session_item in item["sessions"]:
 
-            existing_session= session.query(Session).filter_by(
-                id_session=item["id_session"]
-            ).first()
+                 
 
-            if existing_session:
-                id_session = existing_session
-            else:
-                session_formation = Session(
-                    id_formation=formation.id_formation,
-                    nom = item['nom_session'],
-                    lieu = item['lieu'],
-                    region = item['region'],
-                    date_fin_candidature = item['date_candidature'],
-                    date_debut = item['date_debut'],
-                    est_en_alternance = item['alternance'],
-                    est_en_distanciel = item['distanciel']
-                )
-                session.add(session_formation)
-                session.commit()
-        
+                    existing_session= session.query(Session).filter_by(
+                        nom= session_item['nom_session'],
+                        region = session_item['region'],
+                        date_debut = session_item['date_debut']
+                    ).first()
+
+                    if existing_session:
+                        session_formation = existing_session
+                    else:
+                        session_formation = Session(
+                            id_formation=formation.id_formation,
+                            nom = session_item['nom_session'],
+                            lieu = session_item['lieu'],
+                            region = session_item['region'],
+                            date_fin_candidature = session_item['date_candidature'],
+                            date_debut = session_item['date_debut'],
+                            est_en_alternance = session_item['alternance'],
+                            est_en_distanciel = session_item['distanciel']
+                        )
+                        session.add(session_formation)
+                        session.commit()
+                    
+
+            # formation. = rncp_rs_certificateur_list
+            # session.add(rncp_rs)
+            # session.commit() 
+
         except IntegrityError as e:
             session.rollback()
             print(f"Error saving item due to integrity error: {e}")
