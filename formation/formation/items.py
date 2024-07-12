@@ -6,15 +6,27 @@
 import scrapy
 
 
+class SessionsItem(scrapy.Item):
+    nom_session=scrapy.Field()
+    date_candidature = scrapy.Field()
+    additional_info = scrapy.Field()
+    alternance = scrapy.Field()
+    duree = scrapy.Field()
+    region = scrapy.Field()
+    lieu = scrapy.Field()
+    date_debut = scrapy.Field()
+    distanciel = scrapy.Field()
+
 class FormationItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     title = scrapy.Field()
     rncp = scrapy.Field()
-    rs=scrapy.Field()
-    nom_session=scrapy.Field()
-    date = scrapy.Field()
-    additional_info = scrapy.Field()
+    rs = scrapy.Field()
+    sessions = scrapy.Field()
+    
+    
+     
 
 
 
@@ -27,13 +39,11 @@ class FormationItem(scrapy.Item):
 class FranceCompetencesItem(scrapy.Item):
     title = scrapy.Field()
     formacodes = scrapy.Field()
-    nom_legal = scrapy.Field()
-    siret = scrapy.Field()
-    nom_commercial = scrapy.Field()
-    site_internet = scrapy.Field()
+    # nom_legal = scrapy.Field()
+    # siret = scrapy.Field()
+    # nom_commercial = scrapy.Field()
+    # site_internet = scrapy.Field()
+    certificateur = scrapy.Field() 
     est_actif = scrapy.Field()
     niveau_de_qualification = scrapy.Field()
-    date_de_decision = scrapy.Field()
-    duree_enregistrement_en_annees = scrapy.Field()
     date_echeance_enregistrement = scrapy.Field()
-    date_derniere_delivrance_possible = scrapy.Field()
