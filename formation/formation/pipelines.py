@@ -133,12 +133,16 @@ class FranceCompetencesDatabase:
 
 class SimplonPipeline:
     def process_item(self, item, spider):
-
-        for i in item['session'] :
-            i['alternance'] = bool(int(len(i['alternance'])))
-            i['distanciel'] = bool(int(len(i['distanciel'])))
-
+        adapter = ItemAdapter(item)
+        sessions = adapter.get('sessions', [])
+        for session in sessions:
+            session_adapter = ItemAdapter(session)
+            session_adapter['alternance'] = bool(session_adapter['alternance'])
+            session_adapter['distanciel'] = bool(session_adapter['distanciel'])
         return item
+
+        
+
 
 class SimplonDatabase(object):
     def __init__(self):
