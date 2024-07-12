@@ -29,13 +29,14 @@ class FormationItem(scrapy.Item):
     a_des_rs_rncp = scrapy.Field()
 
 class FranceCompetencesItem(scrapy.Item):
+    code_certif = scrapy.Field()
     title = scrapy.Field()
     formacodes = scrapy.Field()
     # nom_legal = scrapy.Field()
     # siret = scrapy.Field()
     # nom_commercial = scrapy.Field()
     # site_internet = scrapy.Field()
-    certificateur = scrapy.Field() 
+    certificateurs = scrapy.Field() 
     est_actif = scrapy.Field()
     niveau_de_qualification = scrapy.Field()
     date_echeance_enregistrement = scrapy.Field()
