@@ -24,81 +24,78 @@ if engine.dialect.name == 'sqlite':
     date_type = String
 else:
     date_type = Date
+    
+# Association Tables
+lien_formation_france_competences = Table(
+    'lien_formation_france_competences', Base.metadata,
+    Column('id_formation', Integer, ForeignKey('formation.id_formation'), primary_key=True),
+    Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True)
+)
 
-# Define association tables first
-film_acteur = Table(
-    'film_acteur', Base.metadata,
-    Column('film_titre', String),
-    Column('film_date', date_type),
-    Column('film_realisateur', String),
-    Column('acteur_id', Integer, ForeignKey('acteurs.acteur_id')),
-    ForeignKeyConstraint(['film_titre', 'film_date', 'film_realisateur'], 
-                         ['film.titre', 'film.date', 'film.realisateur']),
-    PrimaryKeyConstraint('film_titre', 'film_date', 'film_realisateur', 'acteur_id')
+lien_france_competences_formacode = Table(
+    'lien_france_competences_formacode', Base.metadata,
+    Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True),
+    Column('formacode', Integer, ForeignKey('formacode.formacode'), primary_key=True)
+)
+
+lien_france_competences_certificateur = Table(
+    'lien_france_competences_certificateur', Base.metadata,
+    Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True),
+    Column('siret', Integer, ForeignKey('certificateur.siret'), primary_key=True)
 )
 
 
-
-# Define your classes
+# Models
 class Formation(Base):
     __tablename__ = 'formation'
-    id_formation = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
-    a_des_sessions = Column(String)
-    a_des_rs_rncp = Column(String)
+    id_formation = Column(Integer, primary_key=True)
+    titre = Column(String, nullable=False)
+    a_des_sessions = Column(Integer, nullable=False)
+    a_des_rs_rncp = Column(Integer, nullable=False)
 
+    france_competences = relationship('FranceCompetences', secondary=lien_formation_france_competences, back_populates='formations')
 
-class  France_competences(Base):
-        __tablename__ = 'france_competence'
-        code_certif=Column(String, primary_key=True)
-        nom_titre=Column(String )
-        est_actif=Column(Integer )
-        niveau_de_qualification=Column(String )
-        date_de_decision=Column(date_type )
-        duree_enregistrement_en_annees=Column(Integer  )
-        date_echeance_enregistrement=Column(date_type )
-        Date_derniere_delivrance_possible=Column(date_type  )
-    
+class FranceCompetences(Base):
+    __tablename__ = 'france_competences'
+    code_certif = Column(String, primary_key=True)
+    nom_titre = Column(String, nullable=True)
+    est_actif = Column(Integer, nullable=True)
+    niveau_de_qualification = Column(String, nullable=True)
+    date_echeance_enregistrement = Column(date_type, nullable=True)
+
+    formations = relationship('Formation', secondary=lien_formation_france_competences, back_populates='france_competences')
+    formacodes = relationship('Formacode', secondary=lien_france_competences_formacode, back_populates='france_competences')
+    certificateurs = relationship('Certificateur', secondary=lien_france_competences_certificateur, back_populates='france_competences')
+
 class Formacode(Base):
-        __tablename__ = 'formacode'
-        formacode=Column(Integer, primary_key=True)  
-        nom=Column(String) 
+    __tablename__ = 'formacode'
+    formacode = Column(Integer, primary_key=True)
+    nom = Column(String, nullable=False)
+
+    france_competences = relationship('FranceCompetences', secondary=lien_france_competences_formacode, back_populates='formacodes')
+
+class Certificateur(Base):
+    __tablename__ = 'certificateur'
+    siret = Column(Integer, primary_key=True)
+    nom_legal = Column(String, nullable=False)
+    nom_commercial = Column(String, nullable=False)
+    site_internet = Column(String, nullable=False)
+
+    france_competences = relationship('FranceCompetences', secondary=lien_france_competences_certificateur, back_populates='certificateurs')
 
 class Session(Base):
-        __tablename__ ='session'
-        id_session=Column(Integer, primary_key=True, autoincrement=True ) 
-        id_formation=Column(Integer ) 
-        nom=Column(String )
-        lieu=Column(String )
-        region=Column(String )
-        date_fin_candidature=Column(date_type )
-        date_debut=Column(date_type )
-        est_en_alternance=Column(Integer )
-        est_en_distanciel=Column(Integer )
+    __tablename__ = 'session'
+    id_session = Column(Integer, primary_key=True)
+    id_formation=Column(Integer, ForeignKey('formation.id_formation'), nullable=False)
+    nom = Column(String, nullable=False)
+    lieu = Column(String, nullable=True)
+    region = Column(String, nullable=True)
+    date_fin_candidature = Column(date_type, nullable=True)
+    date_debut = Column(date_type, nullable=True)
+    est_en_alternance = Column(Integer, nullable=False)
+    est_en_distanciel = Column(Integer, nullable=False)
     
-class lien_formation_france_competences(Base):
-        int id_formation PK,FK
-        string code_certif PK,FK
 
-
-        
-class   lien_france_competences_formacode(Base):
-        string code_certif PK,FK
-        int formacode PK,FK
-
-class lien_france_competences_certificateur(Base):
-        string code_certif PK,FK
-        int id_certificateur PK,FK
-      
-
-
-    # acteurs = relationship('Acteur', secondary=film_acteur, 
-    #                        primaryjoin="and_(Film.titre == film_acteur.c.film_titre, "
-    #                                    "Film.date == film_acteur.c.film_date, "
-    #                                    "Film.realisateur == film_acteur.c.film_realisateur)",
-    #                        secondaryjoin="film_acteur.c.acteur_id == Acteur.acteur_id",
-    #                        backref='films')
-    
-# Configuration de la base de données (remplacez 'sqlite:///database.db' par votre base de données)
+# Database connection
 engine = create_engine(bdd_path)
 Base.metadata.create_all(engine)
