@@ -125,6 +125,8 @@ class FranceCompetencesDatabase:
         finally:
             session.close()
 
+        return item
+
 
 ####################################################################################################
 
@@ -139,16 +141,55 @@ class SimplonDatabase(object):
 
     def process_item(self, item, spider):
 
-        session = self.Session()
+        try:
+            session = self.Session()
+
+            existing_formation= session.query(Formation).filter_by(
+                titre=item["titre"]
+            ).first()
+
+            if existing_formation:
+                formation = existing_formation
+            else:
+                formation = Formation(
+                    titre=item['titre'],
+                    a_des_sessions=item['a_des_sessions'],
+                    a_des_rs_rncp=item['a_des_rs_rncp']
+                )
+                session.add(formation)
+                session.commit()
+            
+
+            existing_session= session.query(Session).filter_by(
+                id_session=item["id_session"]
+            ).first()
+
+            if existing_session:
+                id_session = existing_session
+            else:
+                session_formation = Session(
+                    id_formation=formation.id_formation,
+                    nom = item['nom_session'],
+                    lieu = item['lieu'],
+                    region = item['region'],
+                    date_fin_candidature = item['date_candidature'],
+                    date_debut = item['date_debut'],
+                    est_en_alternance = item['alternance'],
+                    est_en_distanciel = item['distanciel']
+                )
+                session.add(session_formation)
+                session.commit()
         
-        formation = Formation(
-            titre=item['titre'],
-            a_des_sessions=item['a_des_sessions'],
-            a_des_rs_rncp=item['a_des_rs_rncp']
-        )
-        session.add(formation)
-        session.commit()
-        
+        except IntegrityError as e:
+            session.rollback()
+            print(f"Error saving item due to integrity error: {e}")
+            raise DropItem(f"Error saving item due to integrity error: {e}")
+        except Exception as e:
+            session.rollback()
+            print(f"Error processing item: {e}")
+            raise DropItem(f"Error processing item: {e}")
+        finally:
+            session.close()
 
         return item
     

@@ -48,7 +48,7 @@ lien_france_competences_certificateur = Table(
 # Models
 class Formation(Base):
     __tablename__ = 'formation'
-    id_formation = Column(Integer, primary_key=True)
+    id_formation = Column(Integer, primary_key=True,autoincrement=True)
     titre = Column(String, nullable=False)
     a_des_sessions = Column(Integer, nullable=False)
     a_des_rs_rncp = Column(Integer, nullable=False)
@@ -85,7 +85,7 @@ class Certificateur(Base):
 
 class Session(Base):
     __tablename__ = 'session'
-    id_session = Column(Integer, primary_key=True)
+    id_session = Column(Integer, primary_key=True, autoincrement=True)
     id_formation=Column(Integer, ForeignKey('formation.id_formation'), nullable=False)
     nom = Column(String, nullable=False)
     lieu = Column(String, nullable=True)
