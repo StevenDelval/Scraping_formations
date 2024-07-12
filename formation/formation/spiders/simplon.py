@@ -25,7 +25,7 @@ class SimplonSpider(CrawlSpider):
         item = FormationItem()
         item['title']= response.xpath('//h1/text()').get()
         item['rncp']= response.xpath('//a[contains(@href,"/rncp/")]/@href').get() #@href, là ou il y a la balise a
-        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').get()
+        item['rs']= response.xpath('//a[contains(@href,"/rs/")]/@href').getall() if not response.xpath('//a[contains(@href,"/rs/")]/@href').getall() else None
 
         if item['rncp'] is not None or item['rs'] is not None :
             item['a_des_rs_rncp'] = True
