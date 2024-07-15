@@ -1,5 +1,5 @@
 
-from sqlalchemy import create_engine, Column, String, Integer,Boolean, Float, Date, ForeignKey, Table, PrimaryKeyConstraint,ForeignKeyConstraint
+from sqlalchemy import create_engine, Column, String, Integer,Boolean,BigInteger, Float, Date, ForeignKey, Table, PrimaryKeyConstraint,ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import os 
@@ -23,9 +23,12 @@ print(engine.dialect.name)
 if engine.dialect.name == 'sqlite':
     date_type = String
     bool_type = Integer
+    big_int_type = Integer
+    
 else:
     date_type = Date
     bool_type = Boolean
+    big_int_type = BigInteger
     
 # Association Tables
 lien_formation_france_competences = Table(
@@ -78,7 +81,7 @@ class Formacode(Base):
 
 class Certificateur(Base):
     __tablename__ = 'certificateur'
-    siret = Column(Integer, primary_key=True)
+    siret = Column(big_int_type, primary_key=True)
     nom_legal = Column(String, nullable=False)
     nom_commercial = Column(String, nullable=False)
     site_internet = Column(String, nullable=False)
