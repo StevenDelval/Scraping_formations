@@ -1,5 +1,8 @@
 import os
 from twisted.internet import asyncioreactor
+import asyncio
+if os.name == 'nt':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncioreactor.install()
 # Définir le réacteur à utiliser
 os.environ['TWISTED_REACTOR'] = 'twisted.internet.asyncioreactor.AsyncioSelectorReactor'

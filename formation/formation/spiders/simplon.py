@@ -61,7 +61,7 @@ class SimplonSpider(CrawlSpider):
             year = session_row_selector.xpath('//div[@class="year"]/text()').get()
             day = day.strip() if day else ""
             month = month.strip() if month else ""
-            year = day.strip() if year else ""
+            year = year.strip() if year else ""
             if day and month and year:
                 session['date_candidature'] = f"{day}/{month}/{year}"
             else:

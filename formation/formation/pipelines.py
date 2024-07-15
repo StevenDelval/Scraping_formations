@@ -8,6 +8,8 @@ from scrapy.exceptions import DropItem
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from .models import *
+from datetime import datetime
+import re
 
 class FranceCompetencesPipeline:
 
@@ -132,11 +134,53 @@ class SimplonPipeline:
         adapter = ItemAdapter(item)
         sessions = adapter.get('sessions', [])
         for session in sessions:
-            session_adapter = ItemAdapter(session)
-            session_adapter['alternance'] = bool(session_adapter['alternance'])
-            session_adapter['distanciel'] = bool(session_adapter['distanciel'])
-        return item
 
+            session=self.clean_session_data(session)
+        
+        return item
+    
+    def clean_session_data(self, session_item):
+        adapter = ItemAdapter(session_item)
+        
+        adapter['date_debut']= self.clean_date_debut(adapter.get('date_debut'))
+        adapter['date_candidature']= self.clean_date_candidature(adapter.get('date_candidature'))
+        adapter['distanciel']= bool(adapter.get('distanciel'))
+        adapter['duree']= self.clean_duree(adapter.get('duree'))
+        adapter['lieu']= self.clean_text(adapter.get('lieu'))
+        adapter['nom_session']= adapter.get('nom_session')
+        adapter['region']= self.clean_text(adapter.get('region'))
+        adapter['alternance']= bool(adapter.get('alternance'))
+        
+        return session_item
+
+    def clean_date_candidature(self, date_str):
+        try:
+            return datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            return date_str
+
+    def clean_date_debut(self, date_str):
+        date_str = date_str.strip().replace("Début : ", "")
+        try:
+            date_obj = datetime.strptime(date_str, '%B %Y')
+            return date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            month_map = {
+                'janvier': '01', 'février': '02', 'mars': '03', 'avril': '04',
+                'mai': '05', 'juin': '06', 'juillet': '07', 'août': '08',
+                'septembre': '09', 'octobre': '10', 'novembre': '11', 'décembre': '12'
+            }
+            for month_name, month_num in month_map.items():
+                if month_name in date_str.lower():
+                    year = re.search(r'\d{4}', date_str).group()
+                    return f"{year}-{month_num}-01"
+            return date_str
+
+    def clean_duree(self, duree_str):
+        return re.sub(r'\s+', ' ', duree_str).strip()
+
+    def clean_text(self, text_str):
+        return text_str.strip()
         
 
 
