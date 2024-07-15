@@ -183,27 +183,31 @@ class SimplonDatabase(object):
                     session.add(rncp_rs)
                     session.commit()
                 liste_rs_rncp.append(rncp_rs)
+            try: 
+                len(item["rs"])
+            except:
+                pass
+            else:
+                if len(item["rs"]):
+                    for rs in item["rs"]:
+                        rs = rs[:-1] if rs[-1] == "/" else rs
+                        path_segments = urlparse(rs).path.split('/')
+                        code_certif = f"{path_segments[-2].lower()}{path_segments[-1]}"
 
-            if len(item["rs"]):
-                for rs in item["rs"]:
-                    rs = rs[:-1] if rs[-1] == "/" else rs
-                    path_segments = urlparse(rs).path.split('/')
-                    code_certif = f"{path_segments[-2].lower()}{path_segments[-1]}"
+                        # Check if rncp or rs already exists
+                        existing_rncp_rs= session.query(FranceCompetences).filter_by(
+                            code_certif=code_certif
+                        ).first()
 
-                    # Check if rncp or rs already exists
-                    existing_rncp_rs= session.query(FranceCompetences).filter_by(
-                        code_certif=code_certif
-                    ).first()
-
-                    if existing_rncp_rs:
-                        rncp_rs = existing_rncp_rs
-                    else:
-                        rncp_rs = FranceCompetences(
-                            code_certif=code_certif,
-                        )
-                        session.add(rncp_rs)
-                        session.commit()
-                    liste_rs_rncp.append(rncp_rs)
+                        if existing_rncp_rs:
+                            rncp_rs = existing_rncp_rs
+                        else:
+                            rncp_rs = FranceCompetences(
+                                code_certif=code_certif,
+                            )
+                            session.add(rncp_rs)
+                            session.commit()
+                        liste_rs_rncp.append(rncp_rs)
 
             
 
