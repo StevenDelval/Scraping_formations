@@ -2,6 +2,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 # useful for handling different item types with a single interface
+from urllib.parse import urlparse
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from sqlalchemy.orm import sessionmaker
@@ -46,22 +47,17 @@ class FranceCompetencesDatabase:
         try:
 
             # Check if rncp or rs already exists
-            existing_rncp_rs= session.query(FranceCompetences).filter_by(
+            rncp_rs= session.query(FranceCompetences).filter_by(
                 code_certif=item["code_certif"]
             ).first()
+            rncp_rs.nom_titre = item['titre']
+            rncp_rs.est_actif = item['est_actif']
+            rncp_rs.niveau_de_qualification = item['niveau_de_qualification']
+            rncp_rs.date_echeance_enregistrement = item['date_echeance_enregistrement']
 
-            if existing_rncp_rs:
-                rncp_rs = existing_rncp_rs
-            else:
-                rncp_rs = FranceCompetences(
-                    code_certif=item["code_certif"],
-                    nom_titre=item['titre'],
-                    est_actif=item['est_actif'],
-                    niveau_de_qualification=item['niveau_de_qualification'],
-                    date_echeance_enregistrement=item['date_echeance_enregistrement']
-                )
-                session.add(rncp_rs)
-                session.commit()
+    
+            session.add(rncp_rs)
+            session.commit()
 
             ## Formacode
             rncp_rs_formacode_list =[]
@@ -167,6 +163,50 @@ class SimplonDatabase(object):
                 )
                 session.add(formation)
                 session.commit()
+            
+            liste_rs_rncp =[]
+            if item["rncp"]:
+                path_segments = urlparse(item["rncp"]).path.split('/')
+                code_certif = f"{path_segments[-3].lower()}{path_segments[-2]}"
+
+                # Check if rncp or rs already exists
+                existing_rncp_rs= session.query(FranceCompetences).filter_by(
+                    code_certif=code_certif
+                ).first()
+
+                if existing_rncp_rs:
+                    rncp_rs = existing_rncp_rs
+                else:
+                    rncp_rs = FranceCompetences(
+                        code_certif=code_certif,
+                    )
+                    session.add(rncp_rs)
+                    session.commit()
+                liste_rs_rncp.append(rncp_rs)
+
+            if len(item["rs"]):
+                for rs in item["rs"]:
+                    rs = rs[:-1] if rs[-1] == "/" else rs
+                    path_segments = urlparse(rs).path.split('/')
+                    code_certif = f"{path_segments[-2].lower()}{path_segments[-1]}"
+
+                    # Check if rncp or rs already exists
+                    existing_rncp_rs= session.query(FranceCompetences).filter_by(
+                        code_certif=code_certif
+                    ).first()
+
+                    if existing_rncp_rs:
+                        rncp_rs = existing_rncp_rs
+                    else:
+                        rncp_rs = FranceCompetences(
+                            code_certif=code_certif,
+                        )
+                        session.add(rncp_rs)
+                        session.commit()
+                    liste_rs_rncp.append(rncp_rs)
+
+            
+
                 
             try:
                 len(item["sessions"])
@@ -199,9 +239,9 @@ class SimplonDatabase(object):
                             session.commit()
                     
 
-            # formation. = rncp_rs_certificateur_list
-            # session.add(rncp_rs)
-            # session.commit() 
+            formation.france_competences = liste_rs_rncp
+            session.add(formation)
+            session.commit() 
 
         except IntegrityError as e:
             session.rollback()
