@@ -97,5 +97,4 @@ class Session(Base):
     
 
 # Database connection
-engine = create_engine(bdd_path)
 Base.metadata.create_all(engine)
