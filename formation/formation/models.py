@@ -1,5 +1,5 @@
 
-from sqlalchemy import create_engine, Column, String, Integer, Float, Date, ForeignKey, Table, PrimaryKeyConstraint,ForeignKeyConstraint
+from sqlalchemy import create_engine, Column, String, Integer,Boolean, Float, Date, ForeignKey, Table, PrimaryKeyConstraint,ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import os 
@@ -22,8 +22,10 @@ Base = declarative_base()
 print(engine.dialect.name)
 if engine.dialect.name == 'sqlite':
     date_type = String
+    bool_type = Integer
 else:
     date_type = Date
+    bool_type = Boolean
     
 # Association Tables
 lien_formation_france_competences = Table(
@@ -50,8 +52,8 @@ class Formation(Base):
     __tablename__ = 'formation'
     id_formation = Column(Integer, primary_key=True,autoincrement=True)
     titre = Column(String, nullable=False)
-    a_des_sessions = Column(Integer, nullable=False)
-    a_des_rs_rncp = Column(Integer, nullable=False)
+    a_des_sessions = Column(bool_type, nullable=False)
+    a_des_rs_rncp = Column(bool_type, nullable=False)
 
     france_competences = relationship('FranceCompetences', secondary=lien_formation_france_competences, back_populates='formations')
 
@@ -59,7 +61,7 @@ class FranceCompetences(Base):
     __tablename__ = 'france_competences'
     code_certif = Column(String, primary_key=True)
     nom_titre = Column(String, nullable=True)
-    est_actif = Column(Integer, nullable=True)
+    est_actif = Column(bool_type, nullable=True)
     niveau_de_qualification = Column(String, nullable=True)
     date_echeance_enregistrement = Column(date_type, nullable=True)
 
@@ -92,8 +94,8 @@ class Session(Base):
     region = Column(String, nullable=True)
     date_fin_candidature = Column(date_type, nullable=True)
     date_debut = Column(date_type, nullable=True)
-    est_en_alternance = Column(Integer, nullable=False)
-    est_en_distanciel = Column(Integer, nullable=False)
+    est_en_alternance = Column(bool_type, nullable=False)
+    est_en_distanciel = Column(bool_type, nullable=False)
     
 
 # Database connection
