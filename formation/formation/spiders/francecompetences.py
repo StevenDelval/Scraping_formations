@@ -64,10 +64,9 @@ class FrancecompetencesSpider(scrapy.Spider):
         item["formacodes"] = []
         formacodes_rows = response.xpath(
             '//div[@class="list--fcpt-certification--essential--desktop__line"]'
-            '//p[@class="list--fcpt-certification--essential--desktop__line__titre" and text()="Formacode(s)"]'
+            '//p[@class="list--fcpt-certification--essential--desktop__line__title" and text()="Formacode(s)"]'
             '/following-sibling::div//p'
         )
-
         for forma_row in formacodes_rows:
             forma_row_content = ''.join(forma_row.getall())
             forma_row_selector = Selector(text=forma_row_content)
