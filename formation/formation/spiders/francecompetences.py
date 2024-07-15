@@ -10,25 +10,30 @@ class FrancecompetencesSpider(scrapy.Spider):
     name = "francecompetences"
     allowed_domains = ["francecompetences.fr"]
     base_url = "https://www.francecompetences.fr/recherche/"
-    start_urls = []
-
-    # Recuperation des du code certif pour recree l'url
-    Session_sql = sessionmaker(bind=engine, autoflush=False)
-    session_sql = Session_sql()
-    code_certifs = session_sql.query(FranceCompetences.code_certif).all()
-    for code in code_certifs:
-        match = re.match(r"([a-zA-Z]+)([0-9]+)", code[0])
-        if match:
-            letters, numbers = match.groups()
-        start_urls.append(base_url+letters+"/"+numbers+"/")
-    ########
-
     custom_settings = {
         'ITEM_PIPELINES': {
             'formation.pipelines.FranceCompetencesPipeline': 200,
             'formation.pipelines.FranceCompetencesDatabase': 300
         }
     }
+    
+    def start_requests(self):
+        # Database session setup
+        Session_sql = sessionmaker(bind=engine, autoflush=False)
+        session_sql = Session_sql()
+        
+        # Fetching the codes from the database
+        code_certifs = session_sql.query(FranceCompetences.code_certif).all()
+        
+        for code in code_certifs:
+            match = re.match(r"([a-zA-Z]+)([0-9]+)", code[0])
+            if match:
+                letters, numbers = match.groups()
+                url = f"{self.base_url}{letters}/{numbers}/"
+                yield scrapy.Request(url=url, callback=self.parse)
+        
+        # Closing the database session
+        session_sql.close()
 
 
 

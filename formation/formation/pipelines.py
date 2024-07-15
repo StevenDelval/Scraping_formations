@@ -243,7 +243,7 @@ class SimplonDatabase(object):
                             session.commit()
                     
 
-            formation.france_competences = liste_rs_rncp
+            formation.france_competences = list(set(liste_rs_rncp))
             session.add(formation)
             session.commit() 
 
