@@ -1,5 +1,5 @@
 import scrapy
-from ..items import FormationItem,SessionsItem
+from formation.items import FormationItem,SessionsItem
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.selector import Selector

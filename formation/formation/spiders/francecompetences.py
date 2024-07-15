@@ -1,9 +1,9 @@
 import re
 import scrapy
-from ..items import FranceCompetencesItem
+from formation.items import FranceCompetencesItem
 from urllib.parse import urlparse
 from scrapy.selector import Selector
-from ..models import *
+from formation.models import *
 from sqlalchemy.orm import sessionmaker
 
 class FrancecompetencesSpider(scrapy.Spider):
