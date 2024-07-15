@@ -1,12 +1,27 @@
+import re
 import scrapy
 from ..items import FranceCompetencesItem
 from urllib.parse import urlparse
 from scrapy.selector import Selector
+from ..models import *
+from sqlalchemy.orm import sessionmaker
 
 class FrancecompetencesSpider(scrapy.Spider):
     name = "francecompetences"
     allowed_domains = ["francecompetences.fr"]
-    start_urls = ["https://www.francecompetences.fr/recherche/rncp/37682/","https://www.francecompetences.fr/recherche/rncp/34757/","https://www.francecompetences.fr/recherche/rs/5487/","https://www.francecompetences.fr/recherche/rncp/37827/"]
+    base_url = "https://www.francecompetences.fr/recherche/"
+    start_urls = []
+
+    # Recuperation des du code certif pour recree l'url
+    Session_sql = sessionmaker(bind=engine, autoflush=False)
+    session_sql = Session_sql()
+    code_certifs = session_sql.query(FranceCompetences.code_certif).all()
+    for code in code_certifs:
+        match = re.match(r"([a-zA-Z]+)([0-9]+)", code[0])
+        if match:
+            letters, numbers = match.groups()
+        start_urls.append(base_url+letters+"/"+numbers+"/")
+    ########
 
     custom_settings = {
         'ITEM_PIPELINES': {
@@ -22,7 +37,7 @@ class FrancecompetencesSpider(scrapy.Spider):
 
         # Extract code_certif from the URL
         path_segments = urlparse(response.url).path.split('/')
-        code_certif = f"{path_segments[-3].upper()}{path_segments[-2]}"
+        code_certif = f"{path_segments[-3].lower()}{path_segments[-2]}"
         item["code_certif"] = code_certif
 
         certificateur_rows = response.xpath(
