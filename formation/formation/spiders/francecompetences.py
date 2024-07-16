@@ -1,19 +1,55 @@
+import re
 import scrapy
-from ..items import FranceCompetencesItem
+from formation.items import FranceCompetencesItem
+from urllib.parse import urlparse
 from scrapy.selector import Selector
+from formation.models import *
+from sqlalchemy.orm import sessionmaker
 
 class FrancecompetencesSpider(scrapy.Spider):
     name = "francecompetences"
     allowed_domains = ["francecompetences.fr"]
-    start_urls = ["https://www.francecompetences.fr/recherche/rncp/37682/","https://www.francecompetences.fr/recherche/rncp/34757/","https://www.francecompetences.fr/recherche/rs/5487/","https://www.francecompetences.fr/recherche/rncp/37827/"]
+    base_url = "https://www.francecompetences.fr/recherche/"
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'formation.pipelines.FranceCompetencesPipeline': 200,
+            'formation.pipelines.FranceCompetencesDatabase': 300
+        }
+    }
+    
+    def start_requests(self):
+        # Database session setup
+        Session_sql = sessionmaker(bind=engine, autoflush=False)
+        session_sql = Session_sql()
+        
+        # Fetching the codes from the database
+        code_certifs = session_sql.query(FranceCompetences.code_certif).all()
+        
+        for code in code_certifs:
+            match = re.match(r"([a-zA-Z]+)([0-9]+)", code[0])
+            if match:
+                letters, numbers = match.groups()
+                url = f"{self.base_url}{letters}/{numbers}/"
+                yield scrapy.Request(url=url, callback=self.parse)
+        
+        # Closing the database session
+        session_sql.close()
+
+
 
     def parse(self, response):
         item = FranceCompetencesItem()
+
+        # Extract code_certif from the URL
+        path_segments = urlparse(response.url).path.split('/')
+        code_certif = f"{path_segments[-3].lower()}{path_segments[-2]}"
+        item["code_certif"] = code_certif
+
         certificateur_rows = response.xpath(
             '//div[@class="accordion-content--fcpt-certification--certifier"]'
             '//table/tbody[@class="table--fcpt-certification__body"]/tr'
         )
-        item["certificateur"] = []
+        item["certificateurs"] = []
 
         for row in certificateur_rows:
             cells = row.xpath('td')
@@ -22,11 +58,13 @@ class FrancecompetencesSpider(scrapy.Spider):
                 cell_text = cell.xpath('text()').get().strip() if cell.xpath('text()').get().strip() !="" else cell.xpath('a/text()').get().strip()
                 certificateur.append(cell_text)
             
-            item["certificateur"].append(certificateur)
+            item["certificateurs"].append(certificateur)
+
+
         item["est_actif"] = response.xpath('//div[@class="banner--fcpt-certification__body__tags"]/p[2]/span[2]/text()').get()
         item["niveau_de_qualification"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "niveau de qualification")]/../div/p/span/text()').get()
         item["date_echeance_enregistrement"] = response.xpath('//div[@class="list--fcpt-certification--essential--desktop__line"]/p[contains(normalize-space(), "Date d’échéance")]/../div/p/span/text()').get()
-        item["title"] = response.xpath('//h1/text()').get()
+        item["titre"] = response.xpath('//h1/text()').get()
         
         item["formacodes"] = []
         formacodes_rows = response.xpath(
@@ -34,7 +72,6 @@ class FrancecompetencesSpider(scrapy.Spider):
             '//p[@class="list--fcpt-certification--essential--desktop__line__title" and text()="Formacode(s)"]'
             '/following-sibling::div//p'
         )
-
         for forma_row in formacodes_rows:
             forma_row_content = ''.join(forma_row.getall())
             forma_row_selector = Selector(text=forma_row_content)

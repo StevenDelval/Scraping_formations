@@ -32,9 +32,8 @@ erDiagram
     }
 
     certificateur{
-        int id_certificateur PK
         string nom_legal
-        int siret
+        int siret PK
         string nom_commercial
         string site_internet 
     }

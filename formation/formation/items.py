@@ -20,30 +20,23 @@ class SessionsItem(scrapy.Item):
 class FormationItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    title = scrapy.Field()
+    titre = scrapy.Field()
     rncp = scrapy.Field()
     rs = scrapy.Field()
     sessions = scrapy.Field()
-    
-    
-     
-
-
-
-
-
-
-
-
+    nom_session=scrapy.Field()
+    a_des_sessions = scrapy.Field()
+    a_des_rs_rncp = scrapy.Field()
 
 class FranceCompetencesItem(scrapy.Item):
-    title = scrapy.Field()
+    code_certif = scrapy.Field()
+    titre = scrapy.Field()
     formacodes = scrapy.Field()
     # nom_legal = scrapy.Field()
     # siret = scrapy.Field()
     # nom_commercial = scrapy.Field()
     # site_internet = scrapy.Field()
-    certificateur = scrapy.Field() 
+    certificateurs = scrapy.Field() 
     est_actif = scrapy.Field()
     niveau_de_qualification = scrapy.Field()
     date_echeance_enregistrement = scrapy.Field()
