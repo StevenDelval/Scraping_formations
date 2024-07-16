@@ -26,8 +26,12 @@ configure_logging(settings)
 runner = CrawlerRunner(settings)
 
 @app.route(route="ScrapyFunction", auth_level=func.AuthLevel.Anonymous)
-async def ScrapyFunction(req: func.HttpRequest) -> func.HttpResponse:
+def ScrapyFunction(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+    
+    settings = get_project_settings()
+    configure_logging(settings)
+    runner = CrawlerRunner(settings)
 
     def crawl():
         print("SimplonSpider started crawling.")
