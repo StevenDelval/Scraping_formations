@@ -4,7 +4,7 @@ import subprocess
 import azure.functions as func
 from dotenv import load_dotenv
 load_dotenv()
-schedule = os.getenv("schedule")
+schedule = os.getenv("SCHEDULE")
 app = func.FunctionApp()
 
 
