@@ -43,6 +43,15 @@ variable "postgres_ip_access_end" {
   type        = string
 }
 
+variable "container_registry_name" {
+  type        = string
+  description = "The container registry name."
+}
+
+variable "image_name" {
+  type        = string
+  description = "The image docker name."
+}
 
 variable "IS_POSTGRES" {
   type        = string
