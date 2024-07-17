@@ -1,49 +1,26 @@
-import os
-from twisted.internet import asyncioreactor
-import asyncio
-if os.name == 'nt':
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-asyncioreactor.install()
-# Définir le réacteur à utiliser
-os.environ['TWISTED_REACTOR'] = 'twisted.internet.asyncioreactor.AsyncioSelectorReactor'
-
-from formation.spiders.simplon import SimplonSpider
-from formation.spiders.francecompetences import FrancecompetencesSpider
-from scrapy.crawler import CrawlerRunner
-from scrapy.utils.project import get_project_settings
-from scrapy.utils.log import configure_logging
-from twisted.internet import reactor, defer
-
-import azure.functions as func
-import datetime
-import json
 import logging
+import os
+import subprocess
+import azure.functions as func
 
 app = func.FunctionApp()
 
 
-@app.route(route="ScrapyFunction", auth_level=func.AuthLevel.Anonymous)
-def ScrapyFunction(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
-    settings = get_project_settings()
-    configure_logging(settings)
-    runner = CrawlerRunner(settings)
+@app.timer_trigger(schedule="0 10 * * 3", arg_name="myTimer", run_on_startup=False, use_monitor=False)
+def timer_trigger1(myTimer: func.TimerRequest) -> None:
+    if myTimer.past_due:
+        logging.info('The timer is past due!')
 
-    def crawl():
-        print("SimplonSpider started crawling.")
-        yield runner.crawl(SimplonSpider)
-        print("SimplonSpider finished crawling.")
-        print("FrancecompetencesSpider started crawling.")
-        yield runner.crawl(FrancecompetencesSpider)
-        print("FrancecompetencesSpider finished crawling.")
-        reactor.stop()
+    logging.info('Python timer trigger function executed.')
 
-
-    crawl()
-    reactor.run() 
-
-
-    return func.HttpResponse(
-        "Scrapy spiders have been run.",
-        status_code=200
-    )
+    try:
+        # Utiliser python -m scrapy pour exécuter le spider
+        result = subprocess.run(["scrapy", "crawl", "simplon"], capture_output=True, text=True, check=True)
+        result = subprocess.run(["scrapy", "crawl", "francecompetences"], capture_output=True, text=True, check=True)
+        
+        logging.info(result.stdout)
+        logging.error(result.stderr)
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error executing command: {e.stderr}")
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
