@@ -2,17 +2,14 @@ import logging
 import os
 import subprocess
 import azure.functions as func
+from azure.functions.decorators.core import AuthLevel
 from dotenv import load_dotenv
 load_dotenv()
-schedule = os.getenv("SCHEDULE")
+
 app = func.FunctionApp()
 
-
-@app.timer_trigger(schedule=schedule, arg_name="myTimer", run_on_startup=True, use_monitor=False)
-def timer_trigger1(myTimer: func.TimerRequest) -> None:
-    if myTimer.past_due:
-        logging.info('The timer is past due!')
-
+@app.route(route="MyHttpTrigger", auth_level=func.AuthLevel.ANONYMOUS)
+def MyHttpTrigger(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python timer trigger function executed.')
 
     try:
@@ -24,6 +21,7 @@ def timer_trigger1(myTimer: func.TimerRequest) -> None:
         
         logging.info(result.stdout)
         logging.error(result.stderr)
+        return func.HttpResponse("scrapping finish", status_code=200, mimetype="application/json")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error executing command: {e.stderr}")
     except Exception as e:
