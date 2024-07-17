@@ -4,7 +4,8 @@ ENV host:logger:consoleLoggingMode=always
 
 COPY . /home/site/wwwroot
 
-RUN pip install --upgrade pip && \
+RUN cd /home/site/wwwroot && \
+    pip install --upgrade pip && \
     pip install -r requirements.txt && \
     playwright install-deps && \
     playwright install
