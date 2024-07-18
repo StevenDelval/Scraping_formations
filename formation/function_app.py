@@ -16,11 +16,13 @@ def MyHttpTrigger(req: func.HttpRequest) -> func.HttpResponse:
         # Change de répertoire vers le dossier contenant le projet Scrapy
         os.chdir("/home/site/wwwroot/formation")
         # Utiliser python -m scrapy pour exécuter le spider
-        result = subprocess.run(["scrapy", "crawl", "simplon"], capture_output=True, text=True, check=True)
-        result = subprocess.run(["scrapy", "crawl", "francecompetences"], capture_output=True, text=True, check=True)
-        
-        logging.info(result.stdout)
-        logging.error(result.stderr)
+        simplon_result = subprocess.run(["scrapy", "crawl", "simplon"], capture_output=True, text=True, check=True)
+        logging.info(f"Simplon Spider Output: {simplon_result.stdout}")
+        logging.error(f"Simplon Spider Errors: {simplon_result.stderr}")
+        francecompetences_result = subprocess.run(["scrapy", "crawl", "francecompetences"], capture_output=True, text=True, check=True)
+        logging.info(f"Francecompetences Spider Output: {francecompetences_result.stdout}")
+        logging.error(f"Francecompetences Spider Errors: {francecompetences_result.stderr}")
+
         return func.HttpResponse("scrapping finish", status_code=200, mimetype="application/json")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error executing command: {e.stderr}")
