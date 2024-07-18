@@ -8,6 +8,11 @@ variable "resource_group_name" {
   description = "The resource group name."
 }
 
+variable "container_env_name" {
+  type        = string
+  description = "The container env name."
+}
+
 variable "storage_account_name" {
   type        = string
   description = "The storage account name."

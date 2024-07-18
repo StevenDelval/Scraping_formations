@@ -33,12 +33,7 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "firewall_rule" {
 
 }
 
-resource "azurerm_container_app_environment" "container_app_environment" {
-  name                = "sfm-container-app-environment"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  depends_on = [azurerm_postgresql_flexible_server.postgresql]
-}
+
 
 resource "azurerm_container_registry" "acr" {
   name                = var.container_registry_name
@@ -65,67 +60,81 @@ resource "null_resource" "docker_push" {
   depends_on = [azurerm_container_registry.acr]
 }
 
+resource "null_resource" "deploy_container_app" {
+  provisioner "local-exec" {
+    command = <<EOT
+    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
+    ENVIRONMENT_NAME=${var.container_env_name}
+    LOCATION=${azurerm_resource_group.rg.location}
 
+    az containerapp env create --name $ENVIRONMENT_NAME \
+      --enable-workload-profiles \
+      --resource-group $RESOURCE_GROUP \
+      --location $LOCATION
 
-resource "azurerm_service_plan" "service_plan" {
-  name                = "sfm_app_service_plan"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  os_type             = "Linux"
-  sku_name            = "Y1"
-
-  depends_on = [azurerm_postgresql_flexible_server.postgresql] # Cette ressource sera créée après que le PostgreSQL sera créé.
-}
-
-resource "azurerm_application_insights" "insights" {
-  name                = "sfm-appinsights"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  application_type    = "web"
-  depends_on = [azurerm_service_plan.service_plan]
-}
-
-
-resource "azurerm_linux_function_app" "funcApp" {
-  name                       = "sfm-azure-functions"
-  resource_group_name        = azurerm_resource_group.rg.name
-  location                   = azurerm_resource_group.rg.location
-  service_plan_id            = azurerm_service_plan.service_plan.id
-  storage_account_name       = azurerm_storage_account.storage_account.name
-  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
-  functions_extension_version = "~4" 
-  
-  site_config {
-    application_stack {
-      docker {
-        registry_url      = azurerm_container_registry.acr.login_server
-        image_name        = var.image_name
-        image_tag         = "latest"  # Replace with your specific image tag
-        registry_username = azurerm_container_registry.acr.admin_username
-        registry_password = azurerm_container_registry.acr.admin_password
-      }
-    }
-    application_insights_connection_string = azurerm_application_insights.insights.connection_string
-    application_insights_key = azurerm_application_insights.insights.instrumentation_key
+    EOT
   }
-
-  app_settings = {
-    DOCKER_REGISTRY_SERVER_URL                = "${azurerm_container_registry.acr.login_server}"
-    DOCKER_REGISTRY_SERVER_USERNAME           = "${azurerm_container_registry.acr.admin_username}"
-    DOCKER_REGISTRY_SERVER_PASSWORD           = "${azurerm_container_registry.acr.admin_password}"
-    IS_POSTGRES = var.IS_POSTGRES
-    DB_USERNAME = var.DB_USERNAME
-    DB_HOSTNAME = "${azurerm_postgresql_flexible_server.postgresql.name}.postgres.database.azure.com"
-    DB_PORT     = var.DB_PORT
-    DB_NAME     = var.DB_NAME
-    DB_PASSWORD = var.DB_PASSWORD
-  }
-
   depends_on = [
     null_resource.docker_push,
-    azurerm_application_insights.insights,
-    azurerm_service_plan.service_plan
-  ]
+    azurerm_postgresql_flexible_server.postgresql
 
-  
+  ]
+}
+
+resource "null_resource" "deploy_function_app" {
+  provisioner "local-exec" {
+    command = <<EOT
+    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
+    ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group $RESOURCE_GROUP --query "loginServer" --output tsv)
+    ACR_IMAGE_NAME=${var.image_name}
+    ENVIRONMENT_NAME=${var.container_env_name}
+    STORAGE_NAME=${azurerm_storage_account.storage_account.name}
+    APP_FUNCTION_NAME=${var.function_app_name}
+    REGISTRY_URL="${azurerm_container_registry.acr.login_server}"
+    REGISTRY_USERNAME=${azurerm_container_registry.acr.admin_username}
+    REGISTRY_PASSWORD=${azurerm_container_registry.acr.admin_password}
+
+    
+    az functionapp create --name $APP_FUNCTION_NAME \
+      --storage-account $STORAGE_NAME \
+      --environment $ENVIRONMENT_NAME \
+      --workload-profile-name "Consumption" \
+      --resource-group $RESOURCE_GROUP \
+      --functions-version 4 \
+      --runtime dotnet-isolated \
+      --registry-server $REGISTRY_URL \
+      --registry-username $REGISTRY_USERNAME  \
+      --registry-password $REGISTRY_PASSWORD \
+      --image $ACR_LOGIN_SERVER/$ACR_IMAGE_NAME
+
+    EOT
+  }
+  depends_on = [null_resource.deploy_container_app]
+}
+
+resource "null_resource" "function_app_settings" {
+  provisioner "local-exec" {
+    command = <<EOT
+    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
+    APP_FUNCTION_NAME=${var.function_app_name}
+    IS_POSTGRES=${var.IS_POSTGRES}
+    DB_USERNAME=${var.DB_USERNAME}
+    DB_HOSTNAME="${azurerm_postgresql_flexible_server.postgresql.name}.postgres.database.azure.com"
+    DB_PORT=${var.DB_PORT}
+    DB_NAME=${var.DB_NAME}
+    DB_PASSWORD=${var.DB_PASSWORD}
+
+
+    az functionapp config appsettings set --name $APP_FUNCTION_NAME \
+      --resource-group $RESOURCE_GROUP \
+      --settings "IS_POSTGRES=$IS_POSTGRES" \
+      "DB_USERNAME=$DB_USERNAME" \
+      "DB_HOSTNAME=$DB_HOSTNAME" \
+      "DB_PORT=$DB_PORT" \
+      "DB_NAME=$DB_NAME" \
+      "DB_PASSWORD=$DB_PASSWORD"
+
+    EOT
+  }
+  depends_on = [null_resource.deploy_function_app]
 }
