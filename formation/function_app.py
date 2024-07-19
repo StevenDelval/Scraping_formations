@@ -27,7 +27,6 @@ def timer_trigger1(myTimer: func.TimerRequest) -> None:
         francecompetences_result = subprocess.run(["scrapy", "crawl", "francecompetences"], capture_output=True, text=True, check=True)
         logging.info(f"Francecompetences Spider Output: {francecompetences_result.stdout}")
 
-        return func.HttpResponse("scrapping finish", status_code=200, mimetype="application/json")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error executing command: {e.stdout}")
         logging.error(f"Error executing command: {e.stderr}")
