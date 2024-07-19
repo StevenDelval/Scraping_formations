@@ -85,8 +85,9 @@ resource "null_resource" "deploy_function_app" {
   provisioner "local-exec" {
     command = <<EOT
     RESOURCE_GROUP=${azurerm_resource_group.rg.name}
-    ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group $RESOURCE_GROUP --query "loginServer" --output tsv)
+    ACR_LOGIN_SERVER=${azurerm_container_registry.acr.login_server}
     ACR_IMAGE_NAME=${var.image_name}
+    IMAGE="$ACR_LOGIN_SERVER/$ACR_IMAGE_NAME"
     ENVIRONMENT_NAME=${var.container_env_name}
     STORAGE_NAME=${azurerm_storage_account.storage_account.name}
     APP_FUNCTION_NAME=${var.function_app_name}
@@ -105,7 +106,7 @@ resource "null_resource" "deploy_function_app" {
       --registry-server $REGISTRY_URL \
       --registry-username $REGISTRY_USERNAME  \
       --registry-password $REGISTRY_PASSWORD \
-      --image $ACR_LOGIN_SERVER/$ACR_IMAGE_NAME
+      --image $IMAGE
 
     EOT
   }
@@ -123,17 +124,32 @@ resource "null_resource" "function_app_settings" {
     DB_PORT=${var.DB_PORT}
     DB_NAME=${var.DB_NAME}
     DB_PASSWORD=${var.DB_PASSWORD}
+    MAX_RETRIES=5
+    RETRY_DELAY=10
+    COUNT=0
 
+    while [ $COUNT -lt $MAX_RETRIES ]; do
+      az functionapp config appsettings set --name $APP_FUNCTION_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --settings "IS_POSTGRES=$IS_POSTGRES" \
+        "DB_USERNAME=$DB_USERNAME" \
+        "DB_HOSTNAME=$DB_HOSTNAME" \
+        "DB_PORT=$DB_PORT" \
+        "DB_NAME=$DB_NAME" \
+        "DB_PASSWORD=$DB_PASSWORD"
+      
+      if [ $? -eq 0 ]; then
+        echo "App settings updated successfully."
+        exit 0
+      else
+        echo "Failed to update app settings. Retrying in $RETRY_DELAY seconds..."
+        COUNT=$((COUNT + 1))
+        sleep $RETRY_DELAY
+      fi
+    done
 
-    az functionapp config appsettings set --name $APP_FUNCTION_NAME \
-      --resource-group $RESOURCE_GROUP \
-      --settings "IS_POSTGRES=$IS_POSTGRES" \
-      "DB_USERNAME=$DB_USERNAME" \
-      "DB_HOSTNAME=$DB_HOSTNAME" \
-      "DB_PORT=$DB_PORT" \
-      "DB_NAME=$DB_NAME" \
-      "DB_PASSWORD=$DB_PASSWORD"
-
+    echo "Failed to update app settings after $MAX_RETRIES attempts."
+    exit 1
     EOT
   }
   depends_on = [null_resource.deploy_function_app]
