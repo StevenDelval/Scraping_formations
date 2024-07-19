@@ -188,7 +188,11 @@ class SimplonPipeline:
             return date_str
 
     def clean_duree(self, duree_str):
-        return re.sub(r'\s+', ' ', duree_str).strip()
+        try:
+            duree_str=duree_str.strip()
+            return duree_str
+        except:
+            return duree_str
 
     def clean_text(self, text_str):
         return text_str.strip()
