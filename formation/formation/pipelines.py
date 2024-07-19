@@ -156,7 +156,6 @@ class SimplonPipeline:
         adapter['date_debut']= self.clean_date_debut(adapter.get('date_debut'))
         adapter['date_candidature']= self.clean_date_candidature(adapter.get('date_candidature'))
         adapter['distanciel']= bool(adapter.get('distanciel'))
-        adapter['duree']= self.clean_duree(adapter.get('duree'))
         adapter['lieu']= self.clean_text(adapter.get('lieu'))
         adapter['nom_session']= adapter.get('nom_session')
         adapter['region']= self.clean_text(adapter.get('region'))
@@ -186,13 +185,6 @@ class SimplonPipeline:
                     year = re.search(r'\d{4}', date_str).group()
                     return f"{year}-{month_num}-01"
             return date_str
-
-    def clean_duree(self, duree_str):
-        try:
-            duree_str=duree_str.strip()
-            return duree_str
-        except:
-            return duree_str
 
     def clean_text(self, text_str):
         return text_str.strip()
