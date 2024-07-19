@@ -32,11 +32,22 @@ class FranceCompetencesPipeline:
         adapter["est_actif"] = currency_est_actif
         return item
     
+    def clean_date_echeance_enregistrement(self, item):
+        adapter = ItemAdapter(item)
+        date_str = adapter.get('date_echeance_enregistrement')
+        try:
+            date_str = datetime.strptime(date_str, '%d-%m-%Y').strftime('%Y-%m-%d')
+            adapter["date_echeance_enregistrement"] = date_str
+            return item
+        except ValueError:
+            return item
+    
     def process_item(self, item, spider):
 
         list_col_text= ["est_actif","date_echeance_enregistrement","niveau_de_qualification","titre"]
         item = self.clean_text(item,list_col_text)
         item = self.clean_est_actif(item)
+        item = self.clean_date_echeance_enregistrement(item)
 
         return item
 
