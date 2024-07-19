@@ -46,7 +46,7 @@ lien_france_competences_formacode = Table(
 lien_france_competences_certificateur = Table(
     'lien_france_competences_certificateur', Base.metadata,
     Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True),
-    Column('siret', Integer, ForeignKey('certificateur.siret'), primary_key=True)
+    Column('siret', big_int_type, ForeignKey('certificateur.siret'), primary_key=True)
 )
 
 
