@@ -11,7 +11,6 @@ class SessionsItem(scrapy.Item):
     date_candidature = scrapy.Field()
     additional_info = scrapy.Field()
     alternance = scrapy.Field()
-    duree = scrapy.Field()
     region = scrapy.Field()
     lieu = scrapy.Field()
     date_debut = scrapy.Field()

@@ -70,7 +70,6 @@ class SimplonSpider(CrawlSpider):
             session['alternance']= session_row_selector.xpath('//div[@class="card-content-tag-container"]/div/a[contains(@href,"alternance")]/text()').get()
             session['distanciel']= session_row_selector.xpath('//div[@class="card-content-tag-container"]/div/a[contains(@href,"100-distanciel")]/text()').get()
             session['region'] = session_row_selector.xpath('//div[@class="card-session-info"]/i[contains(text(),"location_on")]/../text()').get()
-            session['duree'] = session_row_selector.xpath('//div[@class="card-session-info"]/i[contains(text(),"hourglass_empty")]/../text()').get()
             session['date_debut'] = session_row_selector.xpath('//div[@class="card-session-info calendar"]/i[contains(text(),"event")]/../text()').get()
             session['lieu'] = session_row_selector.xpath('//div[@class="card-content"]/text()').get()
             item["sessions"].append(session)

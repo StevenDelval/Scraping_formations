@@ -32,11 +32,22 @@ class FranceCompetencesPipeline:
         adapter["est_actif"] = currency_est_actif
         return item
     
+    def clean_date_echeance_enregistrement(self, item):
+        adapter = ItemAdapter(item)
+        date_str = adapter.get('date_echeance_enregistrement')
+        try:
+            date_str = datetime.strptime(date_str, '%d-%m-%Y').strftime('%Y-%m-%d')
+            adapter["date_echeance_enregistrement"] = date_str
+            return item
+        except ValueError:
+            return item
+    
     def process_item(self, item, spider):
 
         list_col_text= ["est_actif","date_echeance_enregistrement","niveau_de_qualification","titre"]
         item = self.clean_text(item,list_col_text)
         item = self.clean_est_actif(item)
+        item = self.clean_date_echeance_enregistrement(item)
 
         return item
 
@@ -145,7 +156,6 @@ class SimplonPipeline:
         adapter['date_debut']= self.clean_date_debut(adapter.get('date_debut'))
         adapter['date_candidature']= self.clean_date_candidature(adapter.get('date_candidature'))
         adapter['distanciel']= bool(adapter.get('distanciel'))
-        adapter['duree']= self.clean_duree(adapter.get('duree'))
         adapter['lieu']= self.clean_text(adapter.get('lieu'))
         adapter['nom_session']= adapter.get('nom_session')
         adapter['region']= self.clean_text(adapter.get('region'))
@@ -175,9 +185,6 @@ class SimplonPipeline:
                     year = re.search(r'\d{4}', date_str).group()
                     return f"{year}-{month_num}-01"
             return date_str
-
-    def clean_duree(self, duree_str):
-        return re.sub(r'\s+', ' ', duree_str).strip()
 
     def clean_text(self, text_str):
         return text_str.strip()
