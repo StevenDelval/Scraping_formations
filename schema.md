@@ -40,7 +40,7 @@ erDiagram
 
     lien_france_competences_certificateur{
         string code_certif PK,FK
-        int id_certificateur PK,FK
+        int siret PK,FK
     }
 
     session{
