@@ -1,0 +1,6 @@
+fastapi[all]
+fastapi
+uvicorn
+sqlalchemy
+python-dotenv
+psycopg2-binary  # Si vous utilisez PostgreSQL
