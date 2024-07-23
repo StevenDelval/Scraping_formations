@@ -23,6 +23,13 @@ resource "azurerm_postgresql_flexible_server" "postgresql" {
   version                       = "13"
   public_network_access_enabled = true
   storage_tier                  = "P4"
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent
+      # updates these based on some ruleset managed elsewhere.
+      zone,
+    ]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_firewall_rule" "firewall_rule" {
@@ -35,122 +42,69 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "firewall_rule" {
 
 
 
-resource "azurerm_container_registry" "acr" {
-  name                = var.container_registry_name
+resource "azurerm_log_analytics_workspace" "log_analytics" {
+  name                = "log-analytics-workspace-scrapy"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  sku                 = "Basic"
-  admin_enabled       = true
+  sku                 = "PerGB2018"
 }
 
-resource "null_resource" "docker_push" {
-  provisioner "local-exec" {
-    command = <<EOT
-    ACR_NAME=${azurerm_container_registry.acr.name}
-    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
-    ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group $RESOURCE_GROUP --query "loginServer" --output tsv)
-    ACR_IMAGE_NAME=${var.image_name}
+resource "azurerm_container_app_environment" "container_env" {
+  name                       = var.container_env_name
+  resource_group_name        = azurerm_resource_group.rg.name
+  location                   = azurerm_resource_group.rg.location
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.log_analytics.id
+  depends_on = [azurerm_postgresql_flexible_server_firewall_rule.firewall_rule]
+}
 
-    az acr login --name $ACR_NAME
-    docker tag $ACR_IMAGE_NAME $ACR_LOGIN_SERVER/$ACR_IMAGE_NAME
-    docker push $ACR_LOGIN_SERVER/$ACR_IMAGE_NAME
+resource "azurerm_container_app_job" "container_job" {
+  name                         = "container-app-job-scrapy"
+  resource_group_name          = azurerm_resource_group.rg.name
+  location                     = azurerm_resource_group.rg.location
+  container_app_environment_id = azurerm_container_app_environment.container_env.id
 
-    EOT
+  replica_timeout_in_seconds = 600
+  replica_retry_limit        = 0
+  
+  schedule_trigger_config{
+    cron_expression="0 */2 * * *"
   }
-  depends_on = [azurerm_container_registry.acr]
-}
-
-resource "null_resource" "deploy_container_app" {
-  provisioner "local-exec" {
-    command = <<EOT
-    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
-    ENVIRONMENT_NAME=${var.container_env_name}
-    LOCATION=${azurerm_resource_group.rg.location}
-
-    az containerapp env create --name $ENVIRONMENT_NAME \
-      --enable-workload-profiles \
-      --resource-group $RESOURCE_GROUP \
-      --location $LOCATION
-
-    EOT
-  }
-  depends_on = [
-    null_resource.docker_push,
-    azurerm_postgresql_flexible_server.postgresql
-
-  ]
-}
-
-resource "null_resource" "deploy_function_app" {
-  provisioner "local-exec" {
-    command = <<EOT
-    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
-    ACR_LOGIN_SERVER=${azurerm_container_registry.acr.login_server}
-    ACR_IMAGE_NAME=${var.image_name}
-    IMAGE="$ACR_LOGIN_SERVER/$ACR_IMAGE_NAME"
-    ENVIRONMENT_NAME=${var.container_env_name}
-    STORAGE_NAME=${azurerm_storage_account.storage_account.name}
-    APP_FUNCTION_NAME=${var.function_app_name}
-    REGISTRY_URL="${azurerm_container_registry.acr.login_server}"
-    REGISTRY_USERNAME=${azurerm_container_registry.acr.admin_username}
-    REGISTRY_PASSWORD=${azurerm_container_registry.acr.admin_password}
-
+  template {
     
-    az functionapp create --name $APP_FUNCTION_NAME \
-      --storage-account $STORAGE_NAME \
-      --environment $ENVIRONMENT_NAME \
-      --workload-profile-name "Consumption" \
-      --resource-group $RESOURCE_GROUP \
-      --functions-version 4 \
-      --runtime dotnet-isolated \
-      --registry-server $REGISTRY_URL \
-      --registry-username $REGISTRY_USERNAME  \
-      --registry-password $REGISTRY_PASSWORD \
-      --image $IMAGE
+    container {
+      image = "${var.server_name}/${var.image_name}"
 
-    EOT
-  }
-  depends_on = [null_resource.deploy_container_app]
-}
-
-resource "null_resource" "function_app_settings" {
-  provisioner "local-exec" {
-    command = <<EOT
-    RESOURCE_GROUP=${azurerm_resource_group.rg.name}
-    APP_FUNCTION_NAME=${var.function_app_name}
-    IS_POSTGRES=${var.IS_POSTGRES}
-    DB_USERNAME=${var.DB_USERNAME}
-    DB_HOSTNAME="${azurerm_postgresql_flexible_server.postgresql.name}.postgres.database.azure.com"
-    DB_PORT=${var.DB_PORT}
-    DB_NAME=${var.DB_NAME}
-    DB_PASSWORD=${var.DB_PASSWORD}
-    MAX_RETRIES=5
-    RETRY_DELAY=10
-    COUNT=0
-
-    while [ $COUNT -lt $MAX_RETRIES ]; do
-      az functionapp config appsettings set --name $APP_FUNCTION_NAME \
-        --resource-group $RESOURCE_GROUP \
-        --settings "IS_POSTGRES=$IS_POSTGRES" \
-        "DB_USERNAME=$DB_USERNAME" \
-        "DB_HOSTNAME=$DB_HOSTNAME" \
-        "DB_PORT=$DB_PORT" \
-        "DB_NAME=$DB_NAME" \
-        "DB_PASSWORD=$DB_PASSWORD"
+      name  = var.image_name
+      cpu    = 0.5
+      memory = "1Gi"
       
-      if [ $? -eq 0 ]; then
-        echo "App settings updated successfully."
-        exit 0
-      else
-        echo "Failed to update app settings. Retrying in $RETRY_DELAY seconds..."
-        COUNT=$((COUNT + 1))
-        sleep $RETRY_DELAY
-      fi
-    done
 
-    echo "Failed to update app settings after $MAX_RETRIES attempts."
-    exit 1
-    EOT
+      env {
+        name  = "IS_POSTGRES"
+        value = var.IS_POSTGRES
+      }
+      env {
+        name  = "DB_USERNAME"
+        value = var.DB_USERNAME
+      }
+      env {
+        name  = "DB_HOSTNAME"
+        value = "${azurerm_postgresql_flexible_server.postgresql.name}.postgres.database.azure.com"
+      }
+      env {
+        name  = "DB_PORT"
+        value = var.DB_PORT
+      }
+      env {
+        name  = "DB_NAME"
+        value = var.DB_NAME
+      }
+      env {
+        name  = "DB_PASSWORD"
+        value = var.DB_PASSWORD
+      }
+    }
+    
   }
-  depends_on = [null_resource.deploy_function_app]
+  
 }
