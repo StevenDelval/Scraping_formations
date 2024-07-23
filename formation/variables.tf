@@ -57,6 +57,10 @@ variable "image_name" {
   type        = string
   description = "The image docker name."
 }
+variable "server_name" {
+  type        = string
+  description = "The name of the server on which the image is stored."
+}
 
 variable "IS_POSTGRES" {
   type        = string
