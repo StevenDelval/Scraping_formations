@@ -13,3 +13,5 @@ RUN cd /home/site/wwwroot && \
     playwright install
 
 COPY . /home/site/wwwroot
+
+CMD [ "python", "main.py" ]
