@@ -3,85 +3,107 @@ import re
 import csv
 import pandas
 import psycopg2
+import psycopg
+import pg8000
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 load_dotenv()
 
+def fetch_data_from_azure():
 
-host=os.getenv("DB_HOSTNAME")
-port=int(os.getenv("DB_PORT"))
-password=os.getenv("DB_PASSWORD")
-user=os.getenv("DB_USERNAME")
-database=os.getenv("DB_NAME")
+    host=os.getenv("DB_HOSTNAME")
+    port=int(os.getenv("DB_PORT"))
+    password=os.getenv("DB_PASSWORD")
+    user=os.getenv("DB_USERNAME")
+    database=os.getenv("DB_NAME")
 
 
-    # Create the connection URL
-connection_url = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+        # Create the connection URL
+    connection_url = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+    #connection_url = "sqlite:///database.db"
 
-    # Create the SQLAlchemy engine
-engine = create_engine(connection_url, echo=True)
-print(connection_url)
 
-    # Create a configured "Session" class
-Session = sessionmaker(bind=engine)
+        # Create the SQLAlchemy engine
+    engine = create_engine(connection_url, client_encoding='utf-8')
+    print(connection_url)
 
-    # Create a session
-session = Session()
+        # Create a configured "Session" class
+    Session = sessionmaker(bind=engine)
 
-        # Execute a query
-result = session.execute(text("""SELECT code_certif FROM france_competences"""))
-print("lala")
-        # Fetch all results from the executed query
-result_list = [row[0] for row in result]
+        # Create a session
+    session = Session()
 
+    # try:
+                # Execute a query
+    result = session.execute(text("""SELECT code_certif FROM france_competences"""))
+
+            # Fetch all results from the executed query
+    result_list = [row[0] for row in result]
+    print(result_list)
+    return result_list
+
+    # except Exception as e:
+    #         print(f"An error occurred: {e}")
+    #         return None
+
+
+result_list = fetch_data_from_azure()
+
+# Définir le nom du fichier CSV
+csv_file = "data.csv"
 
 # Construire l'URL complète
 for code_certif in result_list :
-    prefixe = re.sub('1-9', '', code_certif)
+    prefixe = re.sub(r'\d+', '', code_certif)
+    print(prefixe)
+
     if prefixe == 'rs' :
         base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where=code_inventaire%3D"
 
         endpoint=re.sub(r"\D", "", code_certif) #code RS
+        print(endpoint)
 
     elif prefixe == 'rncp' :
         base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where=code_rncp%3D"
         endpoint=re.sub(r"\D", "", code_certif) #code_rncp
+        print(endpoint)
 
     url = f"{base_url}{endpoint}"
 
-
     # Effectuer la requête GET
     response = requests.get(url) #, headers=headers, params=params
-    print(response)
     print(response.content)
+    
+    # Enregistrer le contenu de la réponse dans un fichier CSV
+    with open(csv_file, 'ab') as file:
+        file.write(response.content)
+
+
+data = pandas.read_csv("data.csv", sep=';', lineterminator ='\n')
+
+    # Extraire les colonnes spécifiques
+extracted_data = data[['date_extract', 'nom_departement']]
+print(extracted_data)
+
+
+
+
+# Enregistrer les données extraites dans un nouveau fichier CSV
+extracted_data.to_csv('extracted_data.csv', index=False)
+
 
 #     data = pandas
 # # Vérifier le statut de la réponse
 # if response.status_code == 200:
-#     # Définir le nom du fichier CSV
-#     csv_file = "data.csv"
 
-#     # Enregistrer le contenu de la réponse dans un fichier CSV
-#     with open(csv_file, 'wb') as file:
-#         file.write(response.content)
-    
-#     print(f"Les données CSV ont été enregistrées dans {csv_file}")
-# else:
-#     print(f"Erreur: {response.status_code}")
-#     print(response.text)
+    # response.content.to_csv('extracted_data.csv', index=False)
 
-# data = pandas.read_csv("data.csv", sep=';', lineterminator ='\n')
-
-# # Extraire les colonnes spécifiques
-# extracted_data = data[['date_extract', 'nom_departement']]
 
 # # Afficher les données extraites
 # print(extracted_data.head())
 
-# # Enregistrer les données extraites dans un nouveau fichier CSV
-# extracted_data.to_csv('extracted_data.csv', index=False)
 
 
 
@@ -114,3 +136,20 @@ for code_certif in result_list :
 #     "Authorization": f"Bearer {api_key}",
 #     "Content-Type": "application/json",
 # }
+
+
+
+
+
+    # # Connect to an existing database
+    # # with psycopg.connect(f"postgresql://{user}:{password}@{host}:{port}") as conn:
+    # with psycopg.connect(f"sqlite:///database.db") as conn:
+
+    #     # Open a cursor to perform database operations
+    #     with conn.cursor() as cur:
+
+    #         # Execute a command: this creates a new table
+    #         cur.execute("""
+    #            SELECT code_certif FROM france_competences
+    #             """)
+    #         cur.fetchall
