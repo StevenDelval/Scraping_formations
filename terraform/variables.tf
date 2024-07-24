@@ -18,10 +18,6 @@ variable "postgres_name" {
   description = "The name of the PostgreSQL server"
   type        = string
 }
-variable "function_app_name" {
-  type        = string
-  description = "The name of the function app"
-}
 
 variable "admin_user" {
   description = "The administrator username for the PostgreSQL server"
