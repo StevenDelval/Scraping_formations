@@ -1,7 +1,5 @@
 import requests
 import re
-import json
-import psycopg2
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -21,7 +19,6 @@ def fetch_data_from_azure():
     
         # Create the SQLAlchemy engine
     engine = create_engine(connection_url, client_encoding='utf-8')
-    print(connection_url)
 
         # Create a configured "Session" class
     Session = sessionmaker(bind=engine)
