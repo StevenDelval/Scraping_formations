@@ -80,10 +80,4 @@ def nettoyage(data):
     return selected_data
 
 
-if __name__ == "__main__" :
-    
-    tout_les_code_certif_simplon = fetch_data_from_azure()
-    for code in tout_les_code_certif_simplon : 
-        nettoyage(appel_api(code))  #rncp36061
-
 
