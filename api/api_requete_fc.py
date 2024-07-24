@@ -66,7 +66,6 @@ def appel_api(code_certif):
 def nettoyage(data):
   
     # Select specific fields
-    print(data)
     fields_to_keep = ["intitule_certification", "intitule_formation", "nom_departement",
                       "nom_region", "code_formacode_1", "code_formacode_2",
                       "code_formacode_3","code_formacode_4","code_formacode_5"]
