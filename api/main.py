@@ -55,8 +55,11 @@ def read_format_code(code_certif: str, db: Session = Depends(get_db)):
     return {"format_code": format_code}
 
 
-@app.get("/data/{code_certif}", response_model=schemas.DataResponse)
+@app.get("/data/{code_certif}")#, #response_model=schemas.DataResponse)
 def get_data(code_certif: str, db: Session = Depends(get_db)):
+    
+    formation_concurante_api = appel_api(code_certif)
+    formation_conc = nettoyage(formation_concurante_api)
     try:
         format_code_query = text("""
             SELECT lffc.formacode
@@ -67,41 +70,45 @@ def get_data(code_certif: str, db: Session = Depends(get_db)):
 
         formation_query = text("""
             SELECT f.titre, f.a_des_sessions, f.a_des_rs_rncp, 
-                   s.titre AS session_titre, s.lieu AS session_lieu, s.region AS session_region, 
+                   f.titre AS session_titre, s.lieu AS session_lieu, s.region AS session_region, 
                    s.date_debut AS session_date_debut, s.date_fin_candidature AS session_date_fin_candidature,
                    fc.nom_titre AS info_nom, fc.niveau_de_qualification AS info_niveau, 
                    fc.date_echeance_enregistrement AS info_certification
             FROM formation f
             LEFT JOIN session s ON f.id_formation = s.id_formation
             JOIN france_competences fc ON fc.code_certif = fc.code_certif
-            WHERE f.code_certif = :code_certif
+            WHERE fc.code_certif = :code_certif
         """)
-        result = db.execute(formation_query, {'code_certif': code_certif}).fetchone()
+        result = db.execute(formation_query, {'code_certif': code_certif})
+        formation_data = result.mappings().all()
 
-        if not result:
+        if not formation_data:
             raise HTTPException(status_code=404, detail="Data not found")
+        
+        formation_row = formation_data[0]
 
         data = {
             "format_code": format_codes,
             "formation": {
-                "titre": result['titre'],
-                "a_des_sessions": result['a_des_sessions'],
-                "a_des_rs_rncp": result['a_des_rs_rncp']
+                "titre": formation_row['titre'],
+                "a_des_sessions": formation_row['a_des_sessions'],
+                "a_des_rs_rncp": formation_row['a_des_rs_rncp']
             },
             "session": {
-                "titre": result['session_titre'],
-                "lieu": result['session_lieu'],
-                "region": result['session_region'],
-                "date_debut": result['session_date_debut'],
-                "date_fin_candidature": result['session_date_fin_candidature']
+                "titre": formation_row['session_titre'],
+                "lieu": formation_row['session_lieu'],
+                "region": formation_row['session_region'],
+                "date_debut": formation_row['session_date_debut'],
+                "date_fin_candidature": formation_row['session_date_fin_candidature']
             },
             "info_titre": {
-                "nom": result['info_nom'],
-                "niveau": result['info_niveau'],
-                "certification": result['info_certification']
-            }
+                "nom": formation_row['info_nom'],
+                "niveau": formation_row['info_niveau'],
+                "certification": formation_row['info_certification']
+            },
+            "formation_concurante": formation_conc
         }
-
+        
         return {"data": data}
 
     except Exception as e:
