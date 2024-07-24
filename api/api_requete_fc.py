@@ -8,6 +8,17 @@ load_dotenv()
 
 def fetch_data_from_azure():
 
+    """
+    Fetch data from an Azure-hosted PostgreSQL database.
+    
+    This function retrieves connection details from environment variables,
+    establishes a connection to the database, executes a query to fetch 
+    certification codes, and returns the result as a list.
+
+    Returns:
+        list: A list of certification codes fetched from the database.
+    """
+
     host=os.getenv("DB_HOSTNAME")
     port=int(os.getenv("DB_PORT"))
     password=os.getenv("DB_PASSWORD")
@@ -37,6 +48,19 @@ def fetch_data_from_azure():
 
     
 def appel_api(code_certif):
+
+    """
+    Call the external API to retrieve data based on the certification code (RS or RNCP).
+    
+    This function constructs the appropriate API endpoint based on the 
+    prefix of the certification code and sends a GET request to fetch the data.
+
+    Args:
+        code_certif (str): The certification code used to query the API.
+
+    Returns:
+        dict: The JSON response from the API.
+    """
     
     # Construire l'URL complète et appeler l'api
     base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where="
@@ -61,6 +85,19 @@ def appel_api(code_certif):
 
 
 def nettoyage(data):
+
+    """
+    Clean and select specific fields from the API response data.
+    
+    This function extracts specified fields from the results within the 
+    API response and returns a list of dictionaries containing these fields.
+
+    Args:
+        data (dict): The JSON data returned by the API.
+
+    Returns:
+        list: A list of dictionaries containing the selected fields.
+    """
   
     # Select specific fields
     fields_to_keep = ["intitule_certification", "intitule_formation", "nom_departement",
@@ -74,6 +111,4 @@ def nettoyage(data):
         selected_data.append(selected_result)
 
     return selected_data
-
-
 
