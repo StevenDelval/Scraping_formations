@@ -3,14 +3,6 @@ resource "azurerm_resource_group" "rg" {
   location = var.resource_group_location
 }
 
-resource "azurerm_storage_account" "storage_account" {
-  name                     = var.storage_account_name
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
 resource "azurerm_postgresql_flexible_server" "postgresql" {
   name                = var.postgres_name
   resource_group_name = azurerm_resource_group.rg.name
@@ -72,9 +64,9 @@ resource "azurerm_container_app_job" "container_job" {
   template {
     
     container {
-      image = "${var.server_name}/${var.image_name}"
+      image = "${var.server_name}/${var.image_name_scrapy}"
 
-      name  = var.image_name
+      name  = var.image_name_scrapy
       cpu    = 0.5
       memory = "1Gi"
       
@@ -107,4 +99,41 @@ resource "azurerm_container_app_job" "container_job" {
     
   }
   
+}
+
+resource "azurerm_container_group" "container_group" {
+  name                = var.container_group_name_api
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  ip_address_type     = "Public"
+  os_type             = "Linux"
+  restart_policy      = "Never"
+
+  
+
+  container {
+    name   = var.container_name_api
+    image  = "${var.server_name}/${var.image_name_api}"
+    cpu    = "1"
+    memory = "1"
+
+    ports {
+      port     = 80
+      protocol = "TCP"
+    }
+
+    environment_variables = {
+      IS_POSTGRES = var.IS_POSTGRES
+      DB_USERNAME = var.DB_USERNAME
+      DB_HOSTNAME = "${azurerm_postgresql_flexible_server.postgresql.name}.postgres.database.azure.com"
+      DB_PORT = var.DB_PORT
+      DB_NAME = var.DB_NAME
+    }
+
+    secure_environment_variables = {
+      DB_PASSWORD = var.DB_PASSWORD
+    }
+  }
+
+  depends_on = [azurerm_container_app_job.container_job]
 }
