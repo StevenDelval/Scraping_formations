@@ -8,6 +8,7 @@ from models import *
 # from crud import get_formation_by_code_certif, get_format_code_by_code_certif
 #from schemas import FormationDetail, FormatCodeResponse
 from typing import List, Optional
+from api_requete_fc import *
 
 # Crée les tables dans la base de données
 Session_db = sessionmaker(bind=engine, autoflush=False)
@@ -47,6 +48,8 @@ def read_formation(code_certif: str, db: Session = Depends(get_db)):
 @app.get("/format_code/{code_certif}", response_model=schemas.FormatCodeResponse)
 def read_format_code(code_certif: str, db: Session = Depends(get_db)):
     format_code = crud.get_format_code_by_code_certif(db, code_certif)
+    conc = nettoyage(appel_api(code_certif))
+    print(conc)
     if format_code is None:
         raise HTTPException(status_code=404, detail="Format code not found")
     return {"format_code": format_code}
