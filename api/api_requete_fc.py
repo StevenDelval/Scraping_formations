@@ -3,8 +3,6 @@ import re
 import csv
 import pandas
 import psycopg2
-import psycopg
-import pg8000
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -44,54 +42,75 @@ def fetch_data_from_azure():
     print(result_list)
     return result_list
 
-    # except Exception as e:
-    #         print(f"An error occurred: {e}")
-    #         return None
 
-
-result_list = fetch_data_from_azure()
-
-# Définir le nom du fichier CSV
-csv_file = "data.csv"
-
-# Construire l'URL complète
-for code_certif in result_list :
+    
+def appel_api(code_certif):
+    
+    # Construire l'URL complète et appeler l'api
+    base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where="
     prefixe = re.sub(r'\d+', '', code_certif)
     print(prefixe)
 
     if prefixe == 'rs' :
-        base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where=code_inventaire%3D"
-
-        endpoint=re.sub(r"\D", "", code_certif) #code RS
+        endpoint="code_inventaire%3D"+re.sub(r"\D", "", code_certif) #code RS
         print(endpoint)
 
     elif prefixe == 'rncp' :
-        base_url = "https://opendata.caissedesdepots.fr/api/explore/v2.1/catalog/datasets/moncompteformation_catalogueformation/records?where=code_rncp%3D"
-        endpoint=re.sub(r"\D", "", code_certif) #code_rncp
+        endpoint="code_rncp%3D"+re.sub(r"\D", "", code_certif) #code_rncp
         print(endpoint)
 
     url = f"{base_url}{endpoint}"
 
-    # Effectuer la requête GET
+        # Effectuer la requête GET
     response = requests.get(url) #, headers=headers, params=params
-    print(response.content)
-    
-    # Enregistrer le contenu de la réponse dans un fichier CSV
-    with open(csv_file, 'ab') as file:
-        file.write(response.content)
+    data=response.json()
+
+    print(data)
+    return data
 
 
-data = pandas.read_csv("data.csv", sep=';', lineterminator ='\n')
 
-    # Extraire les colonnes spécifiques
-extracted_data = data[['date_extract', 'nom_departement']]
-print(extracted_data)
+def nettoyage(data):
+    pass
 
 
 
 
-# Enregistrer les données extraites dans un nouveau fichier CSV
-extracted_data.to_csv('extracted_data.csv', index=False)
+appel_api("rncp36061")
+
+
+
+# result_list = fetch_data_from_azure()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# data = pandas.read_csv("data.csv", sep=';', lineterminator ='\n')
+
+#     # Extraire les colonnes spécifiques
+# extracted_data = data[['date_extract', 'nom_departement']]
+# print(extracted_data)
+
+
+
+
+# # Enregistrer les données extraites dans un nouveau fichier CSV
+# extracted_data.to_csv('extracted_data.csv', index=False)
 
 
 #     data = pandas
