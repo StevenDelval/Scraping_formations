@@ -83,3 +83,26 @@ class SessionInfo(BaseModel):
 class FormatCodeResponse(BaseModel):
     format_code: List
     
+
+class Session(BaseModel):
+    titre: Optional[str]
+    lieu: Optional[str]
+    region: Optional[str]
+    date_debut: Optional[str]
+    date_fin_candidature: Optional[str]
+
+class InfoTitre(BaseModel):
+    nom: Optional[str]
+    niveau: Optional[str]
+    certification: Optional[str]
+
+class Formation(BaseModel):
+    titre: str
+    a_des_sessions: bool
+    a_des_rs_rncp: Optional[str]
+
+class DataResponse(BaseModel):
+    format_code: List[int]
+    formation: Formation
+    session: Session
+    info_titre: InfoTitre
