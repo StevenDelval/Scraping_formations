@@ -1,8 +1,11 @@
-fastapi[all]
-fastapi
-uvicorn
-sqlalchemy
-python-dotenv
-psycopg2-binary  # Si vous utilisez PostgreSQL
-pydantic
-requests
+
+fastapi==0.111.0
+psycopg2==2.9.9
+psycopg2-binary==2.9.9
+pydantic==2.7.3
+python-dotenv==1.0.1
+requests==2.32.3
+uvicorn==0.23.0
+SQLAlchemy==2.0.31
+uvicorn==0.30.1
+
