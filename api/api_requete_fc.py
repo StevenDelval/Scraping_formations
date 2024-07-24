@@ -66,7 +66,9 @@ def appel_api(code_certif):
 def nettoyage(data):
   
     # Select specific fields
-    fields_to_keep = ["intitule_certification","intitule_formation", "nom_region", "code_formacode_1", "code_formacode_2","code_formacode_3","code_formacode_4","code_formacode_5"]
+    fields_to_keep = ["intitule_certification", "intitule_formation", "nom_departement",
+                      "nom_region", "code_formacode_1", "code_formacode_2",
+                      "code_formacode_3","code_formacode_4","code_formacode_5"]
 
     # Extract the selected fields from the results
     selected_data = []
@@ -74,17 +76,7 @@ def nettoyage(data):
         selected_result = {field: result[field] for field in fields_to_keep}
         selected_data.append(selected_result)
 
-    # Print the selected data
-    for item in selected_data:
-        print(item)
-
     return selected_data
 
-
-if __name__ == "__main__" :
-    
-    tout_les_code_certif_simplon = fetch_data_from_azure()
-    for code in tout_les_code_certif_simplon : 
-        nettoyage(appel_api(code))  #rncp36061
 
 
