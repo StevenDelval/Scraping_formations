@@ -12,8 +12,21 @@ from datetime import datetime
 import re
 
 class FranceCompetencesPipeline:
+    """
+    Pipeline to process and clean data items for France Competences.
+    """
 
     def clean_text(self,item,list_col):
+        """
+        Clean whitespace from text fields in the item.
+        
+        Parameters:
+            item (dict): The data item to clean.
+            list_col (list): List of column names to clean.
+            
+        Returns:
+            dict: The cleaned data item.
+        """
         adapter = ItemAdapter(item)
         for currency_col in list_col:
             currency_str = adapter.get(currency_col)
@@ -23,6 +36,15 @@ class FranceCompetencesPipeline:
         return item
     
     def clean_est_actif(self, item):
+        """
+        Convert 'est_actif' field to integer (1 for active, 0 for inactive).
+        
+        Parameters:
+            item (dict): The data item to process.
+            
+        Returns:
+            dict: The processed data item.
+        """
         adapter = ItemAdapter(item)
         currency_est_actif = adapter.get("est_actif")
         if currency_est_actif == "Active":
@@ -33,6 +55,15 @@ class FranceCompetencesPipeline:
         return item
     
     def clean_date_echeance_enregistrement(self, item):
+        """
+        Convert 'date_echeance_enregistrement' to ISO format (YYYY-MM-DD).
+        
+        Parameters:
+            item (dict): The data item to process.
+            
+        Returns:
+            dict: The processed data item, or original item if conversion fails.
+        """
         adapter = ItemAdapter(item)
         date_str = adapter.get('date_echeance_enregistrement')
         try:
@@ -43,6 +74,16 @@ class FranceCompetencesPipeline:
             return item
     
     def process_item(self, item, spider):
+        """
+        Process each item through cleaning functions.
+        
+        Parameters:
+            item (dict): The data item to process.
+            spider (scrapy.Spider): The spider that scraped the item.
+            
+        Returns:
+            dict: The fully processed data item.
+        """
 
         list_col_text= ["est_actif","date_echeance_enregistrement","niveau_de_qualification","titre"]
         item = self.clean_text(item,list_col_text)
@@ -52,10 +93,29 @@ class FranceCompetencesPipeline:
         return item
 
 class FranceCompetencesDatabase:
+    """
+    Pipeline to save data items to the database for France Competences.
+    """
     def __init__(self):
+        """
+        Initialize the database session.
+        """
         self.Session = sessionmaker(bind=engine, autoflush=False)
 
     def process_item(self, item, spider):
+        """
+        Process and save each item to the database.
+        
+        Parameters:
+            item (dict): The data item to save.
+            spider (scrapy.Spider): The spider that scraped the item.
+            
+        Returns:
+            dict: The saved data item.
+            
+        Raises:
+            DropItem: If an error occurs while saving the item.
+        """
         session = self.Session()
         try:
 
@@ -141,7 +201,20 @@ class FranceCompetencesDatabase:
 
 
 class SimplonPipeline:
+    """
+    Pipeline to process and clean data items for Simplon.
+    """
     def process_item(self, item, spider):
+        """
+        Process each item through cleaning functions.
+        
+        Parameters:
+            item (dict): The data item to process.
+            spider (scrapy.Spider): The spider that scraped the item.
+            
+        Returns:
+            dict: The processed data item.
+        """
         adapter = ItemAdapter(item)
         sessions = adapter.get('sessions', [])
         for session in sessions:
@@ -151,6 +224,16 @@ class SimplonPipeline:
         return item
     
     def clean_session_data(self, session_item):
+        """
+        Clean and process individual session data.
+        
+        Parameters:
+            session_item (dict): The session data item to process.
+            
+        Returns:
+            dict: The cleaned session data item.
+        """
+
         adapter = ItemAdapter(session_item)
         
         adapter['date_debut']= self.clean_date_debut(adapter.get('date_debut'))
@@ -164,12 +247,30 @@ class SimplonPipeline:
         return session_item
 
     def clean_date_candidature(self, date_str):
+        """
+        Convert 'date_candidature' to ISO format (YYYY-MM-DD).
+        
+        Parameters:
+            date_str (str): The date string to convert.
+            
+        Returns:
+            str: The converted date string, or original string if conversion fails.
+        """
         try:
             return datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
         except ValueError:
             return date_str
 
     def clean_date_debut(self, date_str):
+        """
+        Convert 'date_debut' to ISO format (YYYY-MM-DD).
+        
+        Parameters:
+            date_str (str): The date string to convert.
+            
+        Returns:
+            str: The converted date string, or original string if conversion fails.
+        """
         date_str = date_str.strip().replace("Début : ", "")
         try:
             date_obj = datetime.strptime(date_str, '%B %Y')
@@ -187,15 +288,40 @@ class SimplonPipeline:
             return date_str
 
     def clean_text(self, text_str):
+        """
+        Clean and strip whitespace from text.
+        
+        Parameters:
+            text_str (str): The text string to clean.
+            
+        Returns:
+            str: The cleaned text string.
+        """
         return text_str.strip()
         
 
 
 class SimplonDatabase(object):
+    """
+    Pipeline to save data items to the database for Simplon.
+    """
     def __init__(self):
         self.Session = sessionmaker(bind=engine, autoflush=False)
 
     def process_item(self, item, spider):
+        """
+        Process and save each item to the database.
+        
+        Parameters:
+            item (dict): The data item to save.
+            spider (scrapy.Spider): The spider that scraped the item.
+            
+        Returns:
+            dict: The saved data item.
+            
+        Raises:
+            DropItem: If an error occurs while saving the item.
+        """
 
         try:
             session = self.Session()

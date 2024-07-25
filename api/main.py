@@ -44,16 +44,46 @@ def verifier_code_certif(code_certif):
 
 @app.post("/formations/", response_model=schemas.FormationCreate)
 def create_formation(formation: schemas.FormationCreate, db: Session = Depends(get_db)):
+    """
+    Create a new formation in the database.
+
+    Args:
+        formation (schemas.FormationCreate): The data for the formation to create.
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        schemas.FormationCreate: The created Formation object.
+    """
     return crud.create_formation(db=db, formation=formation)
 
 @app.post("/france_competences/", response_model=schemas.FranceCompetencesCreate)
 def create_france_competences(france_competences: schemas.FranceCompetencesCreate, db: Session = Depends(get_db)):
+    """
+    Create new France competencies in the database.
+
+    Args:
+        france_competences (schemas.FranceCompetencesCreate): The data for the France competencies to create.
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        schemas.FranceCompetencesCreate: The created FranceCompetences object.
+    """
     return crud.create_france_competences(db=db, france_competences=france_competences)
 
 
 
 @app.get("/formation/{code_certif}", response_model=List[FormationDetail])
 def read_formation(code_certif: str, db: Session = Depends(get_db)):
+    """
+    Retrieve formations associated with a specific certification code.
+
+    Args:
+        code_certif (str): The certification code to filter formations.
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        List[schemas.FormationDetail]: A list of formation details.
+    """
     formations = crud.get_formation_by_code_certif(db, code_certif)
     if not formations:
         raise HTTPException(status_code=404, detail="Formation not found")
@@ -61,6 +91,16 @@ def read_formation(code_certif: str, db: Session = Depends(get_db)):
 
 @app.get("/format_code/{code_certif}", response_model=schemas.FormatCodeResponse)
 def read_format_code(code_certif: str, db: Session = Depends(get_db)):
+    """
+    Retrieve format codes associated with a specific certification code.
+
+    Args:
+        code_certif (str): The certification code to filter format codes.
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        dict: A dictionary containing the format codes.
+    """
     format_code = crud.get_format_code_by_code_certif(db, code_certif)
     conc = nettoyage(appel_api(code_certif))
     print(conc)
@@ -71,6 +111,16 @@ def read_format_code(code_certif: str, db: Session = Depends(get_db)):
 
 @app.get("/data/{code_certif}")#, #response_model=schemas.DataResponse)
 def get_data(code_certif: str, db: Session = Depends(get_db)):
+    """
+    Retrieve comprehensive data related to a specific certification code, including format codes, formations, sessions, and additional information.
+
+    Args:
+        code_certif (str): The certification code to filter data.
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        dict: A dictionary containing the data related to the certification code, including format codes, formations, sessions, and additional information.
+    """
     code_certif = code_certif.lower()
     if not verifier_code_certif(code_certif):
         raise HTTPException(status_code=400, detail="Invalid code_certif format. It should start with 'rs' or 'rncp' followed by digits.")
