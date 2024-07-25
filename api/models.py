@@ -108,12 +108,7 @@ class Session(Base):
     est_en_distanciel = Column(Boolean, nullable=False)
     formation = relationship('Formation', back_populates='sessions')
 
-# class FormationDetail(BaseModel):
-#     titre: str
-#     a_des_sessions: bool
-#     nom_titre: Optional[str]
-#     est_actif: bool
-#     sessions: List[SessionInfo] = []
+
 
 
 
