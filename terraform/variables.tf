@@ -13,18 +13,10 @@ variable "container_env_name" {
   description = "The container env name."
 }
 
-variable "storage_account_name" {
-  type        = string
-  description = "The storage account name."
-}
 
 variable "postgres_name" {
   description = "The name of the PostgreSQL server"
   type        = string
-}
-variable "function_app_name" {
-  type        = string
-  description = "The name of the function app"
 }
 
 variable "admin_user" {
@@ -48,14 +40,22 @@ variable "postgres_ip_access_end" {
   type        = string
 }
 
-variable "container_registry_name" {
+variable "container_group_name_api" {
   type        = string
-  description = "The container registry name."
+  description = "The container container group name of api."
+}
+variable "container_name_api" {
+  type        = string
+  description = "The container container  name of api."
 }
 
-variable "image_name" {
+variable "image_name_scrapy" {
   type        = string
-  description = "The image docker name."
+  description = "The image docker name of scrapy."
+}
+variable "image_name_api" {
+  type        = string
+  description = "The image docker name of api."
 }
 variable "server_name" {
   type        = string

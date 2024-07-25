@@ -68,11 +68,9 @@ def appel_api(code_certif):
 
     if prefixe == 'rs' :
         endpoint="code_inventaire="+re.sub(r"\D", "", code_certif) #code RS
-        print(endpoint)
 
     elif prefixe == 'rncp' :
         endpoint="code_rncp="+re.sub(r"\D", "", code_certif) #code_rncp
-        print(endpoint)
 
     url = f"{base_url}{endpoint}"
 
