@@ -57,6 +57,7 @@ def read_format_code(code_certif: str, db: Session = Depends(get_db)):
 
 @app.get("/data/{code_certif}")#, #response_model=schemas.DataResponse)
 def get_data(code_certif: str, db: Session = Depends(get_db)):
+    code_certif = code_certif.lower()
     
     formation_concurante_api = appel_api(code_certif)
     formation_conc = nettoyage(formation_concurante_api)
