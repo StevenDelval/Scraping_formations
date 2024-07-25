@@ -23,6 +23,27 @@ def get_db():
     finally:
         db.close()
 
+
+def verifier_code_certif(code_certif):
+    """
+    Vérifie si le code de certification fourni respecte le format attendu.
+
+    Le code de certification doit commencer par 'rs' ou 'rncp' suivi d'un nombre.
+
+    Args:
+        code_certif (str): Le code de certification à vérifier.
+
+    Returns:
+        bool: Retourne True si le code de certification correspond au format requis, False sinon.
+    """
+    # Définir l'expression régulière pour vérifier le format
+    pattern = r'^(rs|rncp)\d+$'
+    
+    # Vérifier si code_certif correspond au pattern
+    match = re.match(pattern, code_certif)
+    
+    return True if match is not None else False
+
 @app.post("/formations/", response_model=schemas.FormationCreate)
 def create_formation(formation: schemas.FormationCreate, db: Session = Depends(get_db)):
     return crud.create_formation(db=db, formation=formation)
@@ -58,6 +79,8 @@ def read_format_code(code_certif: str, db: Session = Depends(get_db)):
 @app.get("/data/{code_certif}")#, #response_model=schemas.DataResponse)
 def get_data(code_certif: str, db: Session = Depends(get_db)):
     code_certif = code_certif.lower()
+    if not verifier_code_certif(code_certif):
+        raise HTTPException(status_code=400, detail="Invalid code_certif format. It should start with 'rs' or 'rncp' followed by digits.")
     
     formation_concurante_api = appel_api(code_certif)
     formation_conc = nettoyage(formation_concurante_api)
@@ -76,7 +99,9 @@ def get_data(code_certif: str, db: Session = Depends(get_db)):
         FROM france_competences fc
         WHERE fc.code_certif = :code_certif
     """)
-    titre_info = db.execute(titre_info_query, {'code_certif': code_certif}).first()._mapping
+    titre_info = db.execute(titre_info_query, {'code_certif': code_certif}).mappings().first()
+    if not titre_info:
+        titre_info = {"formation":"Aucune titre rncp ou rs trouvée"}
 
 
     id_formation_query = text("""
