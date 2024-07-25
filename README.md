@@ -10,7 +10,7 @@ This project includes:
 
 - **Scraping**: Automated data scraping to gather information about training offerings from various centers.
 - **Database Setup**: Instructions for building a PostgreSQL database on Azure, including data import procedures
-- **API Development**: Creation of a FastAPI-based API with token-based authentication and Ml-ops monitoring.
+- **API Development**: Creation of a FastAPI-based API.
 
 
 ## Dependencies
