@@ -5,8 +5,6 @@ import crud
 import schemas
 from sqlalchemy import text
 from models import *
-# from crud import get_formation_by_code_certif, get_format_code_by_code_certif
-#from schemas import FormationDetail, FormatCodeResponse
 from typing import List, Optional
 from api_requete_fc import *
 
@@ -52,12 +50,7 @@ def create_formation(formation: schemas.FormationCreate, db: Session = Depends(g
 def create_france_competences(france_competences: schemas.FranceCompetencesCreate, db: Session = Depends(get_db)):
     return crud.create_france_competences(db=db, france_competences=france_competences)
 
-# @app.get("/details_by_code_certif/", response_model=schemas.FormationDetail)
-# def get_details_by_code_certif(code_certif: str, db: Session = Depends(get_db)):
-#     details = crud.get_details_by_code_certif(db, code_certif)
-#     if not details:
-#         raise HTTPException(status_code=404, detail="Formation not found")
-#     return details
+
 
 @app.get("/formation/{code_certif}", response_model=List[FormationDetail])
 def read_formation(code_certif: str, db: Session = Depends(get_db)):
