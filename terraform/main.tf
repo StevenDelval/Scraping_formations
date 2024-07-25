@@ -1,8 +1,10 @@
+# Resource group for organizing related Azure resources
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.resource_group_location
 }
 
+# Flexible PostgreSQL server within the specified resource group
 resource "azurerm_postgresql_flexible_server" "postgresql" {
   name                = var.postgres_name
   resource_group_name = azurerm_resource_group.rg.name
@@ -24,6 +26,7 @@ resource "azurerm_postgresql_flexible_server" "postgresql" {
   }
 }
 
+# Firewall rule for allowing specific IP range to access the PostgreSQL server
 resource "azurerm_postgresql_flexible_server_firewall_rule" "firewall_rule" {
   name             = "postgresql-rule"
   server_id        = azurerm_postgresql_flexible_server.postgresql.id
@@ -33,7 +36,7 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "firewall_rule" {
 }
 
 
-
+# Log Analytics workspace for monitoring and logging
 resource "azurerm_log_analytics_workspace" "log_analytics" {
   name                = "log-analytics-workspace-scrapy"
   resource_group_name = azurerm_resource_group.rg.name
@@ -41,6 +44,7 @@ resource "azurerm_log_analytics_workspace" "log_analytics" {
   sku                 = "PerGB2018"
 }
 
+# Container App Environment for running containerized applications
 resource "azurerm_container_app_environment" "container_env" {
   name                       = var.container_env_name
   resource_group_name        = azurerm_resource_group.rg.name
@@ -49,6 +53,7 @@ resource "azurerm_container_app_environment" "container_env" {
   depends_on = [azurerm_postgresql_flexible_server_firewall_rule.firewall_rule]
 }
 
+# Container App Job for running scheduled tasks within the specified environment
 resource "azurerm_container_app_job" "container_job" {
   name                         = "container-app-job-scrapy"
   resource_group_name          = azurerm_resource_group.rg.name
@@ -101,6 +106,7 @@ resource "azurerm_container_app_job" "container_job" {
   
 }
 
+# Container Group for deploying containerized applications with public IP
 resource "azurerm_container_group" "container_group" {
   name                = var.container_group_name_api
   resource_group_name = azurerm_resource_group.rg.name

@@ -4,6 +4,22 @@ import subprocess
 from dotenv import load_dotenv
 load_dotenv()
 
+"""
+This script loads environment variables, changes the working directory to a Scrapy project, 
+and runs two Scrapy spiders while logging their outputs and any errors encountered.
+
+Imported Modules:
+    logging: For logging information and errors.
+    os: For changing the working directory.
+    subprocess: For running external commands.
+    load_dotenv: For loading environment variables from a .env file.
+
+Functions:
+    load_dotenv(): Loads environment variables from a .env file.
+    os.chdir(path): Changes the current working directory.
+    subprocess.run(args, capture_output, text, check): Runs an external command and captures its output.
+"""
+
 
 logging.info('Python timer trigger function executed.')
 try:

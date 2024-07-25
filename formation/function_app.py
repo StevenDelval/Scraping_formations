@@ -10,6 +10,16 @@ app = func.FunctionApp()
 
 @app.timer_trigger(schedule="0 0 */2 * * *", arg_name="myTimer", run_on_startup=False, use_monitor=True)
 def timer_trigger1(myTimer: func.TimerRequest) -> None:
+    """
+    Timer trigger function that runs every two days at midnight.
+
+    Args:
+        myTimer (func.TimerRequest): Timer request object provided by Azure Functions.
+
+    This function changes the current directory to the folder containing the Scrapy project and
+    runs two spiders: `simplon` and `francecompetences`. The output of each spider is logged.
+    If there are any errors during the execution of the spiders, they are captured and logged.
+    """
     if myTimer.past_due:
         logging.info('The timer is past due!')
 

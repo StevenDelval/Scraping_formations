@@ -38,12 +38,14 @@ lien_formation_france_competences = Table(
     'lien_formation_france_competences', Base.metadata,
     Column('id_formation', Integer, ForeignKey('formation.id_formation'), primary_key=True),
     Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True)
+   
 )
 
 lien_france_competences_formacode = Table(
     'lien_france_competences_formacode', Base.metadata,
     Column('code_certif', String, ForeignKey('france_competences.code_certif'), primary_key=True),
     Column('formacode', Integer, ForeignKey('formacode.formacode'), primary_key=True)
+ 
 )
 
 lien_france_competences_certificateur = Table(
