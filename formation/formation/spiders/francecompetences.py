@@ -7,6 +7,9 @@ from formation.models import *
 from sqlalchemy.orm import sessionmaker
 
 class FrancecompetencesSpider(scrapy.Spider):
+    """
+    Spider for scraping certification data from the France Compétences website.
+    """
     name = "francecompetences"
     allowed_domains = ["francecompetences.fr"]
     base_url = "https://www.francecompetences.fr/recherche/"
@@ -18,6 +21,10 @@ class FrancecompetencesSpider(scrapy.Spider):
     }
     
     def start_requests(self):
+        """
+        Initializes the database session, fetches certification codes from the database, 
+        and generates initial requests to be sent to the target website.
+        """
         # Database session setup
         Session_sql = sessionmaker(bind=engine, autoflush=False)
         session_sql = Session_sql()
@@ -38,6 +45,12 @@ class FrancecompetencesSpider(scrapy.Spider):
 
 
     def parse(self, response):
+        """
+        Parses the response from the website, extracts relevant information, and populates the item.
+        
+        :param response: The response object containing the HTML content of the webpage.
+        """
+        
         item = FranceCompetencesItem()
 
         # Extract code_certif from the URL
